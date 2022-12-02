@@ -1,8 +1,9 @@
 const fs = require('fs')
+const os = require('os')
 
 let content = fs.readFileSync('01.txt').toString()
 
-let splitted = content.split('\n')
+let splitted = content.split(os.EOL)
 let chunked = []
 let working = []
 for (let i = 0; i < splitted.length; i++) {
