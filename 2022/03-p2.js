@@ -1,5 +1,6 @@
 const fs = require('fs')
 const { EOL } = require('os')
+const { chunkArray } = require('./helpers')
 
 let data = fs.readFileSync('03.txt')
     .toString()
@@ -14,19 +15,12 @@ function getPriority(char) {
     return idx + 1;
 }
 
-function chunkArray(arr, len) {
-    let ret = []
-    for (let i = 0; i < arr.length; i += len) {
-        ret.push(arr.slice(i, i + len))
-    }
-    return ret;
-}
-
 let charmap = {}
 let groupArr = chunkArray(data, 3)
 for (let group of groupArr) {
     let groupCharMap = {}
     for (let rucksack of group) {
+        // Generate arrays for individual compartments.
         let firstCompartment = rucksack.substring(0, rucksack.length / 2)
         let secondCompartment = rucksack.substring(rucksack.length / 2)
         let localcount = {}
@@ -41,9 +35,8 @@ for (let group of groupArr) {
                 localcount[sc] = [0,0]
             localcount[sc][1]++
         }
-        // Only allow items where it is inside of the 1st and 2nd compartment.
-        // localcount = Object.fromEntries(Object.entries(localcount).filter(v => v[1][0] > 0 && v[1][1] > 0))
     
+        // Format so it's easier on the eyes, idk why I did this
         let localPriorityCharMap = []
         for (let pair of Object.entries(localcount)) {
             localPriorityCharMap.push({
@@ -55,7 +48,6 @@ for (let group of groupArr) {
     
         // Sort based on priority (lowest to highesty)
         let sortedPriorityMap = localPriorityCharMap.sort((a, b) => a.priority - b.priority)
-        console.log(sortedPriorityMap)
         for (let item of sortedPriorityMap) {
             if (groupCharMap[item.char] == undefined) {
                 groupCharMap[item.char] = 0
@@ -63,7 +55,7 @@ for (let group of groupArr) {
             groupCharMap[item.char] += 1
         }
     }
-    console.log(groupCharMap)
+    // Only append to charmap if the character was found in all 3 rucksacks
     for (let pair of Object.entries(groupCharMap)) {
         if (charmap[pair[0]] == undefined) {
             charmap[pair[0]] = 0
