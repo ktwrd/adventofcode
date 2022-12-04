@@ -46,7 +46,7 @@ for (let groupLineIndex in groups) {
 
     if (b[0] <= a[0] && a[0] <= b[1])
         overlapCount += 1
-    else if ((a[0] <= b[0]) && (b[0] <= a[1]))
+    else if (a[0] <= b[0] && b[0] <= a[1])
         overlapCount += 1
 }
 
