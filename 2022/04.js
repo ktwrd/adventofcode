@@ -4,12 +4,14 @@ const { EOL } = require('os')
 const lines = fs.readFileSync('04.txt')
     .toString()
     .split(EOL)
+    .filter(v => v.length > 0)
+
 
 function calculateGroups() {
-    let tempgroup = []
     let ret = []
     for (let i of lines) {
-        ret.push(i.split(','))
+        if (i.length > 1)
+            ret.push(i.split(','))
     }
     return ret
 }
@@ -17,45 +19,36 @@ function calculateGroups() {
 const groups = calculateGroups()
 
 function parseGroup(group) {
-    let items = []
-    for (let line of group) {
-        let c = line.split('-')
-        items.push([
+    let ret = []
+    for (let item of group) {
+        let c = item.split('-')
+        ret.push([
             parseInt(c[0]),
             parseInt(c[1])
         ])
     }
-    return items
+    return ret
 }
 
-let globalCount = 0
-let groupTable = []
+
+let totalCount = 0
+let overlapCount = 0
 for (let groupLineIndex in groups) {
-    let groupLine = groups[groupLineIndex]
-    let group = parseGroup(groupLine)
-    for (let innerIndex in group) {
-        let inner = group[innerIndex]
-        let bk = false
-        for (let outerIndex in group) {
-            let outer = group[outerIndex]
-            if (outerIndex != innerIndex &&
-                inner[0] >= outer[0] &&
-                inner[0] <= outer[1] &&
-                inner[1] <= outer[1] &&
-                inner[1] >= outer[0]) {
-                    groupTable.push({
-                        groupLineIndex,
-                        innerIndex,
-                        outerIndex
-                    })
-                globalCount++;
-                bk = true;
-                break;
-            }
-        }
-        if (bk)
-            break;
-    }
+    let group = parseGroup(groups[groupLineIndex])
+
+    let a = group[0]
+    let b = group[1]
+
+    if (a[0] >= b[0] && a[1] <= b[1])
+        totalCount += 1
+    else if (b[0] >= a[0] && b[1] <= a[1])
+        totalCount += 1
+
+    if (b[0] <= a[0] <= b[1])
+        overlapCount += 1
+    else if (a[0] <= b[0] <= a[1])
+        overlapCount += 1
 }
-console.table(groupTable)
-console.log(`total: ${globalCount}`)
+
+console.log(`${totalCount}`)
+console.log(`${overlapCount}`)
