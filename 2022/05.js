@@ -30,7 +30,6 @@ function parsetable()
         // add padding so each column is 4 chars exactly
         headerlines.push(line += ' ')
     }
-    let columnCount = parseColumnCount(headerlines)
 
     let letterTable = []
     for (let line of headerlines)
@@ -95,7 +94,6 @@ function getInstructionLines() {
     return lines
 }
 /**
- * 
  * @returns {instruction[]}
  */
 function parseinstructions()
