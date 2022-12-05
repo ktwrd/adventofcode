@@ -145,6 +145,28 @@ function executeInstruction(instruction, st)
     return stack
 }
 
+function executeInvertedInstruction(instruction, st)
+{
+    let stack = JSON.parse(JSON.stringify(st))
+    let prepend = []
+    let sourceColumn = JSON.parse(JSON.stringify(stack[instruction.sourceIndex]))
+    for (let x = 0; x < instruction.count; x++)
+    {
+        // prepend source column to prepend stack and remove it from the og source column
+        prepend = [
+            ...prepend,
+            sourceColumn[x]
+        ]
+        stack[instruction.sourceIndex].shift()
+    }
+    // add the prepend stack before the target column data
+    stack[instruction.targetIndex] = [
+        ...prepend,
+        ...stack[instruction.targetIndex]
+    ]
+    return stack
+}
+
 
 let stackInstructions = parseinstructions()
 function printTop(stack)
@@ -157,14 +179,23 @@ function printTop(stack)
     console.log(`executed answer: ${items.join('')}`)
 }
 function exec() {
-    let localStack = table
+    let localStack = JSON.parse(JSON.stringify(table))
     for (let item of stackInstructions)
     {
         localStack = executeInstruction(item, localStack)
     }
+
+    let localStackInvert = JSON.parse(JSON.stringify(table))
+    for (let item of stackInstructions)
+    {
+        localStackInvert = executeInvertedInstruction(item, localStackInvert)
+    }
     console.log('executed stack')
     console.table(localStack.map(v => v.join(', ')))
     printTop(localStack)
+    console.log('inverted executed stack')
+    console.table(localStackInvert.map(v => v.join(', ')))
+    printTop(localStackInvert)
 }
 exec()
 console.log(`took ${Date.now() - startTimestamp}ms`)
