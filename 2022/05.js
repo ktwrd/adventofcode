@@ -145,6 +145,7 @@ function executeInstruction(instruction, st)
     return stack
 }
 
+// Part 2 is just a append instead of prepend for the local stack
 function executeInvertedInstruction(instruction, st)
 {
     let stack = JSON.parse(JSON.stringify(st))
