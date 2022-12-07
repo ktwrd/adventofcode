@@ -84,9 +84,43 @@ function firstPart(item) {
 
     return [size, answer]
 }
+function secondPart(item) {
+    let size = 0
+    let returnValue = []
+
+    for (let file of Object.entries(item.files)) {
+        size += item.files[file[0]]
+    }
+
+    for (let directory of Object.entries(item.dirs)) {
+        let directorySize = secondPart(item.dirs[directory[0]])
+        size += directorySize[directorySize.length - 1]
+        returnValue = returnValue.concat(directorySize)
+    }
+
+    returnValue.push(size)
+    return returnValue
+}
 
 let partOneAnswer = firstPart(root)
 console.log([
     '================ part 1',
     partOneAnswer[1]
 ].join('\n'))
+
+
+console.log('================ part 2')
+let secondSize = secondPart(root)
+let totalSecond = secondSize[secondSize.length - 1]
+let freespacerequire = totalSecond - 40000000
+secondSize.sort((a, b) => a - b)
+let done = false
+for (let size of secondSize) {
+    if (size >= freespacerequire) {
+        console.log(size)
+        done = true
+        break
+    }
+}
+if (!done)
+    console.log(-1)
