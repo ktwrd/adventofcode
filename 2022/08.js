@@ -13,16 +13,15 @@ const lineArray = data.split('\n')
 /**
  * @typedef {Object} GeneratedGrid
  * @property {TreeObject[]} trees
- * @property {Number[][]} raw
- * @property {Number} width
- * @property {Number} height
  */
 /**
  * @returns {GeneratedGrid}
  */
 function generate() {
     let data = {
-        trees: []
+        trees: [],
+        width: 0,
+        height: 0
     }
     for (let y in lineArray)
     {
@@ -41,7 +40,11 @@ function generate() {
                     height
                 })
             }
+            if (data.width < x)
+                data.width = x
         }
+        if (data.height < y)
+            data.height = y
     }
     return data
 }
@@ -61,26 +64,112 @@ function iterCount(data)
     for (let tree of data.trees)
     {
         if (tree.x == 0 || tree.y == 0)
+        {        
             count++;
+        }
         else
         {
+            let ts = data.trees.filter(v => v.x == tree.x && v.y < tree.y)
+            let bs = data.trees.filter(v => v.x == tree.x && v.y > tree.y)
+            let ls = data.trees.filter(v => v.y == tree.y && v.x < tree.x)
+            let rs = data.trees.filter(v => v.y == tree.y && v.x > tree.x)
             // top
-            if (data.trees.filter(v => v.x == tree.x && v.y < tree.y).every(v => prec(v, tree)))
+            if (ts.every(v => prec(v, tree)))
+            {
                 count++;
+            }
             // bottom
-            else if (data.trees.filter(v => v.x == tree.x && v.y > tree.y).every(v => prec(v, tree)))
+            else if (bs.every(v => prec(v, tree)))
+            {
                 count++;
+            }
             // left
-            else if (data.trees.filter(v => v.y == tree.y && v.x < tree.x).every(v => prec(v, tree)))
+            else if (ls.every(v => prec(v, tree)))
+            {
                 count++;
+            }
             // right
-            else if (data.trees.filter(v => v.y == tree.y && v.x > tree.x).every(v => prec(v, tree)))
-                count ++
+            else if (rs.every(v => prec(v, tree)))
+            {
+                count++;
+            }
         }
     }
-    console.log(count)
+    return count
+}
+function secondaryCount(data)
+{
+    let count = 0
+    for (let tree of data.trees)
+    { 
+        let left = 0
+        let right = 0
+        let top = 0
+        let bottom = 0
+
+        let x = tree.x - 1
+        let y = tree.y
+
+        // search left
+        while (x >= 0)
+        {
+            let t = data.trees.filter(v => v.x == x && v.y == y)[0]
+            left++
+
+            if (t.height >= tree.height)
+                break;
+            x--;
+        }
+
+        x = tree.x + 1
+
+        // search right
+        while (x <= data.width)
+        {
+            let t = data.trees.filter(v => v.x == x && v.y == y)[0]
+            right++
+
+            if (t.height >= tree.height)
+                break;
+            x++
+        }
+
+        x = tree.x
+        y = tree.y - 1
+
+        // search up
+        while (y >= 0)
+        {
+            let t = data.trees.filter(v => v.x == x && v.y == y)[0]
+            top++
+
+            if (t.height >= tree.height)
+                break;
+            y--;
+        }
+
+        y = tree.y + 1
+
+        // search down
+        while (y <= data.height)
+        {
+            let t = data.trees.filter(v => v.x == x && v.y == y)[0]
+            bottom++
+
+            if (t.height >= tree.height)
+                break;
+            y++;
+        }
+
+        count = Math.max(count, left * right * top * bottom)
+    }
+    return count
 }
 let startTimestamp = Date.now()
 let generated = generate()
-iterCount(generated)
-console.log(`${Date.now() - startTimestamp}ms`)
+let p1 = Date.now()
+console.log(`p1: ${iterCount(generated)} (${Date.now() - p1}ms)`)
+let p2 = Date.now()
+console.log(`p2: ${secondaryCount(generated)} (${((Date.now() - p2) / 1000).toFixed(3)}s)`)
+
+console.log(`${((Date.now() - startTimestamp) / 1000).toFixed(3)}s`)
