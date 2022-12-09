@@ -6,7 +6,7 @@ const lineArray = data.split('\n').map(v => v.split('\r')[0])
 function calc(tailLength)
 {
     let seen = {}
-    /** @type {Number[]} */
+    /** @type {Number[][]} */
     let head = []
     for (let i = 0; i < tailLength; i++)
     {
