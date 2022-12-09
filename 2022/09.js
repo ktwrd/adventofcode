@@ -1,24 +1,8 @@
 const fs = require('fs')
-const {EOL} = require('os') 
 
 const data = fs.readFileSync('09.txt').toString()
-const lineArray = data.split('\n')
+const lineArray = data.split('\n').map(v => v.split('\r')[0])
 
-let offset = {
-    L: [-1,  0],
-    R: [ 1,  0],
-    U: [ 0, 1],
-    D: [ 0, -1]
-}
-
-let head = {
-    x: 0,
-    y: 0
-}
-let tail = {
-    x: 0,
-    y: 0
-}
 function calc(tailLength)
 {
     let seen = {}
