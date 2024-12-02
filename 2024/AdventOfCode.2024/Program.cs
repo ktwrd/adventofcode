@@ -37,6 +37,9 @@ internal class Program
             case 1:
                 new DayOne().Run(file);
                 return;
+            case 2:
+                new DayTwo().Run(file);
+                return;
             default:
                 throw new ArgumentException($"Invalid value {day}", nameof(day));
         }
