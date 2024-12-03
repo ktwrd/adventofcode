@@ -398,3 +398,4 @@ FodyWeavers.xsd
 
 # JetBrains
 .idea
+*.txt
