@@ -1,19 +1,19 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace AdventOfCode.TwentyTwentyFour;
 
-public class DayThree
+[DefaultValue(3)]
+public class DayThree : IDayHandler
 {
     public void Run(string[] lines)
     {
         var content = string.Join("\n", lines);
-
-
         var a = PartA(content);
-        Console.WriteLine($"Part A: {a}");
+        Console.WriteLine($"Part One: {a}");
         var b = PartB(content);
-        Console.WriteLine($"Part B: {b}");
+        Console.WriteLine($"Part Two: {b}");
     }
 
     private int PartA(string content, Func<Match, bool>? filter = null)

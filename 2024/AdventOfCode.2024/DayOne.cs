@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace AdventOfCode.TwentyTwentyFour;
 
-public class DayOne
+[DefaultValue(1)]
+public class DayOne : IDayHandler
 {
     public void Run(string[] lines)
     {
@@ -49,7 +51,7 @@ public class DayOne
                 sum += (b - a);
             }
         }
-        Console.WriteLine($"A: {sum}");
+        Console.WriteLine($"Part One: {sum}");
     }
     public void PartB(List<int> a, List<int> b)
     {
@@ -64,6 +66,6 @@ public class DayOne
             }
             result += i * c;
         }
-        Console.WriteLine($"B: {result}");
+        Console.WriteLine($"Part Two: {result}");
     }
 }

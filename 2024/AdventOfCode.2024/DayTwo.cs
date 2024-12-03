@@ -1,6 +1,9 @@
+using System.ComponentModel;
+
 namespace AdventOfCode.TwentyTwentyFour;
 
-public class DayTwo
+[DefaultValue(2)]
+public class DayTwo : IDayHandler
 {
     public void Run(string[] lines)
     {
