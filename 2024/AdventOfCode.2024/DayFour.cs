@@ -10,36 +10,38 @@ public class DayFour : IDayHandler
     public void Run(string[] lines)
     {
         lines = lines.Where(e => !string.IsNullOrEmpty(e)).ToArray();
+        var watchA = new Stopwatch();
+        watchA.Start();
         var a = Part1(lines);
-        Console.WriteLine($"Part 1: {a}");
+        watchA.Stop();
+        Console.WriteLine($"Part 1: {a} ({watchA.ElapsedMilliseconds}ms)");
+        var watchB = new Stopwatch();
+        watchB.Start();
         var b = Part2(lines);
-        Console.WriteLine($"Part 2: {b}");
+        watchB.Stop();
+        Console.WriteLine($"Part 2: {b} ({watchB.ElapsedMilliseconds}ms)");
     }
 
     private int Part1(string[] input)
     {
         int count = 0;
         var inputWhole = string.Join("\n", input);
-        int horizontal = 0;
-        foreach (Match match in Regex.Matches(inputWhole, @"(XMAS)", RegexOptions.None))
+        foreach (var _ in Regex.Matches(inputWhole, @"(XMAS)", RegexOptions.None))
         {
-            Trace.WriteLine($"XMAS: {match.Index}");
             count++;
-            horizontal++;
         }
-
-        foreach (Match match in Regex.Matches(inputWhole, @"(SAMX)", RegexOptions.None))
+        foreach (var _ in Regex.Matches(inputWhole, @"(SAMX)", RegexOptions.None))
         {
             count++;
-            horizontal++;
         }
 
         var rowLength = input[0].Length;
+        var p = rowLength - 3;
         for (int i = 0; i < input.Length - 3; i++)
         {
-            // vertical
             for (int c = 0; c < rowLength; c++)
             {
+                // vertical
                 if (input[i][c] == 'X'
                     && input[i + 1][c] == 'M'
                     && input[i + 2][c] == 'A'
@@ -48,48 +50,50 @@ public class DayFour : IDayHandler
                     count++;
                 }
                 if (input[i][c] == 'S'
-                         && input[i + 1][c] == 'A'
-                         && input[i + 2][c] == 'M'
-                         && input[i + 3][c] == 'X')
+                    && input[i + 1][c] == 'A'
+                    && input[i + 2][c] == 'M'
+                    && input[i + 3][c] == 'X')
                 {
                     count++;
                 }
-            }
-            // diagonal - to right, downwards
-            for (int c = 0; c < rowLength - 3; c++)
-            {
-                if (input[i][c] == 'X'
-                    && input[i + 1][c + 1] == 'M'
-                    && input[i + 2][c + 2] == 'A'
-                    && input[i + 3][c + 3] == 'S')
+
+                // diagonal - to left, downwards
+                if (c >= 3)
                 {
-                    count++;
-                }
-                if (input[i][c] == 'S'
-                         && input[i + 1][c + 1] == 'A'
-                         && input[i + 2][c + 2] == 'M'
-                         && input[i + 3][c + 3] == 'X')
-                {
-                    count++;
-                }
-            }
-            // diagonal - to left, downwards
-            for (int c = 3; c < rowLength; c++)
-            {
-                if (input[i][c] == 'X'
-                    && input[i + 1][c - 1] == 'M'
-                    && input[i + 2][c - 2] == 'A'
-                    && input[i + 3][c - 3] == 'S')
-                {
-                    count++;
-                }
+                    if (input[i][c] == 'X'
+                        && input[i + 1][c - 1] == 'M'
+                        && input[i + 2][c - 2] == 'A'
+                        && input[i + 3][c - 3] == 'S')
+                    {
+                        count++;
+                    }
                 
-                if (input[i][c] == 'S'
-                    && input[i + 1][c - 1] == 'A'
-                    && input[i + 2][c - 2] == 'M'
-                    && input[i + 3][c - 3] == 'X')
+                    if (input[i][c] == 'S'
+                        && input[i + 1][c - 1] == 'A'
+                        && input[i + 2][c - 2] == 'M'
+                        && input[i + 3][c - 3] == 'X')
+                    {
+                        count++;
+                    }
+                }
+
+                // diagonal - to right, downwards
+                if (c < p)
                 {
-                    count++;
+                    if (input[i][c] == 'X'
+                        && input[i + 1][c + 1] == 'M'
+                        && input[i + 2][c + 2] == 'A'
+                        && input[i + 3][c + 3] == 'S')
+                    {
+                        count++;
+                    }
+                    if (input[i][c] == 'S'
+                        && input[i + 1][c + 1] == 'A'
+                        && input[i + 2][c + 2] == 'M'
+                        && input[i + 3][c + 3] == 'X')
+                    {
+                        count++;
+                    }
                 }
             }
         }
@@ -100,6 +104,7 @@ public class DayFour : IDayHandler
     {
         var rowLength = input[0].Length;
         int count = 0;
+        var xp = "MAS".ToCharArray();
         for (int i = 0; i < input.Length - 2; i++)
         {
             for (int c = 0; c < rowLength - 2; c++)
@@ -129,7 +134,6 @@ public class DayFour : IDayHandler
                     return arr.Count(x => x) >= 2;
                 }
 
-                var xp = "MAS".ToCharArray();
                 if (Check(xp))
                 {
                     count++;
