@@ -30,11 +30,9 @@ public class DayFour : IDayHandler
 
         foreach (Match match in Regex.Matches(inputWhole, @"(SAMX)", RegexOptions.None))
         {
-            Trace.WriteLine($"SAMX: {match.Index}");
             count++;
             horizontal++;
         }
-        Trace.WriteLine($"Horizontal: {horizontal}");
 
         var rowLength = input[0].Length;
         for (int i = 0; i < input.Length - 3; i++)
@@ -48,7 +46,6 @@ public class DayFour : IDayHandler
                     && input[i + 3][c] == 'S')
                 {
                     count++;
-                    Trace.WriteLine($"XMAS (Vertical) Line {i}, Char: {c}");
                 }
                 if (input[i][c] == 'S'
                          && input[i + 1][c] == 'A'
@@ -56,7 +53,6 @@ public class DayFour : IDayHandler
                          && input[i + 3][c] == 'X')
                 {
                     count++;
-                    Trace.WriteLine($"SAMX (Vertical) Line {i}, Char: {c}");
                 }
             }
             // diagonal - to right, downwards
@@ -68,7 +64,6 @@ public class DayFour : IDayHandler
                     && input[i + 3][c + 3] == 'S')
                 {
                     count++;
-                    Trace.WriteLine($"XMAS (Diagonal, Right) Line {i}, Char: {c}");
                 }
                 if (input[i][c] == 'S'
                          && input[i + 1][c + 1] == 'A'
@@ -76,7 +71,6 @@ public class DayFour : IDayHandler
                          && input[i + 3][c + 3] == 'X')
                 {
                     count++;
-                    Trace.WriteLine($"SAMX (Diagonal, Right) Line {i}, Char: {c}");
                 }
             }
             // diagonal - to left, downwards
@@ -87,7 +81,6 @@ public class DayFour : IDayHandler
                     && input[i + 2][c - 2] == 'A'
                     && input[i + 3][c - 3] == 'S')
                 {
-                    Trace.WriteLine($"XMAS (Diagonal, Left) Line {i}, Char: {c}");
                     count++;
                 }
                 
@@ -96,7 +89,6 @@ public class DayFour : IDayHandler
                     && input[i + 2][c - 2] == 'M'
                     && input[i + 3][c - 3] == 'X')
                 {
-                    Trace.WriteLine($"SAMX (Diagonal, Left) Line {i}, Char: {c}");
                     count++;
                 }
             }
@@ -122,9 +114,11 @@ public class DayFour : IDayHandler
                     bool b = input[i + 2][c] == s[0]
                                  && input[i + 1][c + 1] == s[1]
                                  && input[i][c + 2] == s[2];
+                    // top right to bottom left (reversed)
                     bool d = input[i + 2][c] == s[2]
                              && input[i + 1][c + 1] == s[1]
                              && input[i][c + 2] == s[0];
+                    // top left to bottom right (reversed)
                     bool e = input[i][c] == s[2]
                              && input[i + 1][c + 1] == s[1]
                              && input[i + 2][c + 2] == s[0];
