@@ -10,32 +10,47 @@ public class DayFive: IDayHandler
     {
         var orderingRules = FindOrderingRules(lines);
         var existingPageNumbers = FindPageNumbers(lines);
+        
+        var printOrder = EnsurePrintOrder(orderingRules, existingPageNumbers, out var partOneData, out var partTwoData);
+        
+        var partOne = FindMiddleSum(partOneData, printOrder);
+        var partTwo = FindMiddleSum(partTwoData, printOrder);
+        Console.WriteLine($"Part 1: {partOne}");
+        Console.WriteLine($"Part 2: {partTwo}");
+    }
 
-        var firstSuccessIndexes = new List<int>();
-        var notFirstSuccessfulIndexes = new List<int>();
-        for (int i = 0; i < existingPageNumbers.Count; i++)
+    private List<List<int>> EnsurePrintOrder(
+        (int, int)[] orderingRules,
+        List<List<int>> currentPrintOrder,
+        out List<int> unchangedIndexes,
+        out List<int> shiftedIndexes)
+    {
+        var result = new List<List<int>>(currentPrintOrder.Count);
+
+        unchangedIndexes = [];
+        shiftedIndexes = [];
+        for (int i = 0; i < currentPrintOrder.Count; i++)
         {
-            var current = new List<int>(existingPageNumbers[i]);
-            Console.WriteLine("".PadRight(16, '=') + $" {i}");
-            bool cont = true;
+            var current = new List<int>(currentPrintOrder[i]);
+            bool allowLoop = true;
             bool firstSuccess = false;
             int attemptCount = 0;
-            while (cont)
+            while (allowLoop)
             {
-                cont = VerifyPrintOrder(current, orderingRules, out var failedAt) == false;
-                if (attemptCount == 0 && cont == false)
+                allowLoop = VerifyPrintOrder(current, orderingRules, out var failedAt) == false;
+                if (attemptCount == 0 && allowLoop == false)
                 {
                     firstSuccess = true;
                 }
 
                 if (failedAt != null)
                 {
+                    // shift failed item to the left. pretty much brute forcing
                     var fai = (int)failedAt;
                     var c = current[fai];
                     var cc = current[fai - 1];
                     current[fai] = cc;
                     current[fai - 1] = c;
-                    Console.WriteLine($"Moved value {c} from index {fai} to {fai - 1}");
                 }
 
                 attemptCount++;
@@ -43,27 +58,17 @@ public class DayFive: IDayHandler
 
             if (firstSuccess)
             {
-                firstSuccessIndexes.Add(i);
+                unchangedIndexes.Add(i);
             }
             else
             {
-                notFirstSuccessfulIndexes.Add(i);
+                shiftedIndexes.Add(i);
             }
-
-            existingPageNumbers[i] = current;
-            Console.WriteLine($"Finished Item");
+            
+            result.Add(current);
         }
-        Console.WriteLine($"Completed all lines");
-        /*Console.WriteLine("======== All");
-        foreach (var p in existingPageNumbers)
-        {
-            Console.WriteLine(string.Join(", ", p));
-        }*/
-        
-        var partOne = FindMiddleSum(firstSuccessIndexes, existingPageNumbers);
-        Console.WriteLine($"Part 1: {partOne}");
-        var partTwo = FindMiddleSum(notFirstSuccessfulIndexes, existingPageNumbers);
-        Console.WriteLine($"Part 2: {partTwo}");
+
+        return result;
     }
 
     private int FindMiddleSum(List<int> indexes, List<List<int>> existingPageNumbers)
@@ -104,11 +109,11 @@ public class DayFive: IDayHandler
     {
         bool s = false;
         var result = new List<List<int>>();
-        for (int i = 0; i < lines.Length; i++)
+        foreach (var t in lines)
         {
             if (s == false)
             {
-                if (string.IsNullOrEmpty(lines[i]))
+                if (string.IsNullOrEmpty(t))
                 {
                     s = true;
                     continue;
@@ -117,7 +122,7 @@ public class DayFive: IDayHandler
             
             if (s)
             {
-                var split = lines[i].Split(',');
+                var split = t.Split(',');
                 var c = new List<int>(split.Length);
                 c.AddRange(split.Select(int.Parse));
                 result.Add(c);
@@ -132,16 +137,14 @@ public class DayFive: IDayHandler
         failedAt = null;
         for (int i = 0; i < printOrder.Count; i++)
         {
-            for (int c = 0; c < orderingRules.Length; c++)
+            foreach (var (x, y) in orderingRules)
             {
-                var (x, y) = orderingRules[c];
                 if (printOrder[i] == x)
                 {
                     var yi = printOrder.IndexOf(y);
                     if (yi > -1 && yi < i)
                     {
                         failedAt = i;
-                        Console.WriteLine($"{printOrder[i]} is before {y} (i: {i}, yi: {yi}, rule: {c})");
                         return false;
                     }
                 }
