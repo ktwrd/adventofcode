@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Text;
+using NeoSmart.PrettySize;
 
 namespace AdventOfCode.TwentyTwentyFour;
 
@@ -91,7 +92,14 @@ internal class Program
         var handlers = FindDayHandlers(typeof(Program).Assembly);
         if (handlers.TryGetValue(day, out var handler))
         {
+            var allocStart = GC.GetTotalAllocatedBytes();
+            var sw = Stopwatch.StartNew();
             handler.Run(content);
+            sw.Stop();
+            var ms = sw.ElapsedMilliseconds;
+            var alloc = GC.GetTotalAllocatedBytes() - allocStart;
+            Console.WriteLine("Allocated: " + PrettySize.Bytes(alloc));
+            Console.WriteLine($"Took: {ms}ms");
         }
         else
         {
