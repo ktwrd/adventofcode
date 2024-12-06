@@ -10,53 +10,112 @@ public class DaySix : IDayHandler
 {
     public void Run(string[] lines)
     {
-	    GetMapInfo(lines, out var obstacles, out var currentGuardPosition, out var currentGuardDirection);
-	    Console.WriteLine($"Obstacles:");
-	    Console.WriteLine(string.Join("\n", obstacles.Select(e => e.ToString())));
-	    Console.WriteLine($"Guard Position: {currentGuardPosition}");
-	    Console.WriteLine($"Guard Direction: {currentGuardDirection}");
+	    var a = PartOne(lines);
+	    Console.WriteLine($"Part One: {a}");
+	    var b = PartTwo(lines);
+	    Console.WriteLine($"Part Two: {b}");
+    }
 
-	    bool cont = true;
-	    var mapState = lines;
-	    var stepCount = 0;
-	    var walkedPositions = new List<Point>();
-	    while (cont)
+    public int PartTwo(string[] lines)
+    {
+	    int width = lines[0].Length;
+	    int height = lines.Length;
+	    var allPoints = new List<Point>();
+	    for (int i = 0; i < height; i++)
+		    for (int c = 0; c < width; c++)
+			    allPoints.Add(new(c, i));
+
+	    GetMapInfo(lines, out var ogObstacles, out var guardPosition, out var guardDir);
+
+	    List<Point> DuplicatePoints(List<Point> d)
 	    {
-		    var s = ProcessGuardStep(mapState, out var updated, out bool guardMoved, out var guardPos);
-		    /*Console.WriteLine($"======== {stepCount}");
-		    foreach (var x in updated)
-		    {
-			    Console.WriteLine(x);
-		    }*/
-		    if (s == false)
-		    {
-			    cont = false;
-		    }
-		    else
-		    {
-			    if (guardMoved)
-			    {
-				    walkedPositions.Add(guardPos);
-				    stepCount++;
-			    }
-
-			    mapState = updated;
-		    }
+		    return d.ToList().Select(e => new Point(e.X, e.Y)).ToList();
 	    }
+	    
+	    int result = 0;
 
+	    Parallel.ForEach(allPoints, point =>
+	    {
+		    var obstacles = DuplicatePoints(ogObstacles);
+		    obstacles.Add(point);
+
+		    var gp = new Point(guardPosition.X, guardPosition.Y);
+		    var gd = $"{guardDir}".ToCharArray()[0];
+
+		    var (_, reachedLimit) = Process(obstacles, gp, gd, true, 1024_000);
+		    if (!reachedLimit)
+		    {
+			    result++;
+		    }
+	    });
+	    
+	    return result;
+    }
+
+    public int PartOne(string[] lines)
+    {
+	    var (count, _) = Process(lines);
+	    return count;
+    }
+
+    public (int, bool) Process(string[] lines, bool limitIterations = false, int iterationLimit = int.MaxValue)
+    {
+	    GetMapInfo(lines, out var obstacles, out var currentGuardPosition, out var currentGuardDirection);
+
+	    var (walkedPositions, reachedLimit) = Process(obstacles, currentGuardPosition, currentGuardDirection,
+		    limitIterations, iterationLimit);
+	    
 	    walkedPositions = walkedPositions.Distinct().ToList();
-	    var walkedMap = GenerateMap(mapState[0].Length, mapState.Length, obstacles, Point.Empty,  ' ', walkedPositions);
-	    Console.WriteLine($"========= Touched parts ({walkedPositions.Count})");
+	    var walkedMap = GenerateMap(lines[0].Length, lines.Length, obstacles, Point.Empty,  ' ', walkedPositions);
+	    Console.WriteLine($"========= Touched parts");
 	    int count = 0;
 	    foreach (var x in walkedMap)
 	    {
 		    count += Regex.Matches(x, "(X)").Count;
-		    Console.WriteLine(x);
 	    }
 
-	    Console.WriteLine(count);
+	    return (count, reachedLimit);
     }
 
+    public (List<Point>, bool) Process(List<Point> obstacles, Point currentGuardPosition, char currentGuardDirection, bool limitIterations = false, int iterationLimit = int.MaxValue)
+    {
+	    bool cont = true;
+	    var iterCount = 0;
+	    var walkedPositions = new List<Point>();
+	    walkedPositions.Add(currentGuardPosition);
+	    Point guardPosition = currentGuardPosition;
+	    char guardDirection = currentGuardDirection;
+	    bool reachedLimit = false;
+	    while (cont)
+	    {
+		    var s = ProcessGuardStepAlt(
+			    obstacles,
+			    guardPosition,
+			    guardDirection,
+			    out var outGuardMove,
+			    out var outGuardDirection,
+			    out var outGuardPos);
+		    if (s == false)
+		    {
+			    cont = false;
+		    }
+		    walkedPositions.Add(outGuardPos);
+
+		    guardPosition = outGuardPos;
+		    guardDirection = outGuardDirection;
+		    iterCount++;
+
+		    if (limitIterations && iterCount >= iterationLimit)
+		    {
+			    reachedLimit = true;
+			    break;
+		    }
+	    }
+
+	    walkedPositions = walkedPositions.Distinct().ToList();
+	    return (walkedPositions, reachedLimit);
+    }
+    
     public static FrozenDictionary<char, char> DirectionMap = new Dictionary<char, char>()
     {
 	    { '^', 'N' },
@@ -85,76 +144,159 @@ public class DaySix : IDayHandler
 			    {
 				    obstacles.Add(new Point(c, i));
 			    }
-			    else if (DirectionMap.TryGetValue(lines[i][c], out var xpfps))
+			    else if (DirectionMap.TryGetValue(lines[i][c], out var dir))
 			    {
 				    guardPosition = new Point(c, i);
-				    guardDirection = xpfps;
+				    guardDirection = dir;
 			    }
 		    }
 	    }
     }
 
-    public bool ProcessGuardStep(string[] currentState, out string[] updatedMap, out bool guardMoved, out Point guardPosition)
+    public bool ProcessGuardStepAlt(
+	    List<Point> obstacles,
+	    Point currentGuardPosition,
+	    char currentGuardDirection,
+	    out bool guardMove,
+	    out char guardDir,
+	    out Point guardPos)
     {
-	    guardMoved = false;
-	    GetMapInfo(currentState, out var obstacles, out var currentGuardPosition, out var currentGuardDirection);
-	    if (currentGuardPosition.X == -1 && currentGuardPosition.Y == -1)
+	    guardMove = false;
+	    guardDir = currentGuardDirection;
+	    guardPos = new(currentGuardPosition.X, currentGuardPosition.Y);
+
+	    if (guardPos.X < 0 || guardPos.Y < 0)
 	    {
-		    guardPosition = new(-1, -1);
-		    updatedMap = [];
-		    Console.WriteLine($"Guard OOB!");
 		    return false;
 	    }
-
-	    Point? infrontOfObstacle = null;
+	    
+	    Point? currentObstacle = null;
 	    foreach (var obs in obstacles)
 	    {
-		    if (infrontOfObstacle != null)
+		    if (currentObstacle != null)
 			    continue;
-		    switch (currentGuardDirection)
+		    switch (guardDir)
 		    {
 			    case 'N':
-				    if (obs.Y == currentGuardPosition.Y - 1 && obs.X == currentGuardPosition.X)
+				    if (obs.Y == guardPos.Y - 1 && obs.X == guardPos.X)
 				    {
-					    infrontOfObstacle = obs;
+					    currentObstacle = obs;
 				    }
 				    break;
 			    case 'S':
-				    if (obs.Y == currentGuardPosition.Y + 1 && obs.X == currentGuardPosition.X)
+				    if (obs.Y == guardPos.Y + 1 && obs.X == guardPos.X)
 				    {
-					    infrontOfObstacle = obs;
+					    currentObstacle = obs;
 				    }
 				    break;
 			    case 'E':
-				    if (obs.Y == currentGuardPosition.Y && obs.X == currentGuardPosition.X + 1)
+				    if (obs.Y == guardPos.Y && obs.X == guardPos.X + 1)
 				    {
-					    infrontOfObstacle = obs;
+					    currentObstacle = obs;
 				    }
 				    break;
 			    case 'W':
-				    if (obs.Y == currentGuardPosition.Y && obs.X == currentGuardPosition.X - 1)
+				    if (obs.Y == guardPos.Y && obs.X == guardPos.X - 1)
 				    {
-					    infrontOfObstacle = obs;
+					    currentObstacle = obs;
 				    }
 				    break;
 		    }
 	    }
 
-	    if (infrontOfObstacle == null)
+	    if (currentObstacle == null)
 	    {
-		    switch (currentGuardDirection)
+		    switch (guardDir)
 		    {
 			    case 'N':
-				    currentGuardPosition.Y--;
+				    guardPos.Y--;
 				    break;
 			    case 'S':
-				    currentGuardPosition.Y++;
+				    guardPos.Y++;
 				    break;
 			    case 'E':
-				    currentGuardPosition.X++;
+				    guardPos.X++;
 				    break;
 			    case 'W':
-				    currentGuardPosition.X--;
+				    guardPos.X--;
+				    break;
+		    }
+
+		    guardMove = true;
+	    }
+	    else
+	    {
+		    if (RotationDictionary.TryGetValue(guardDir, out var sp))
+		    {
+			    guardDir = sp;
+		    }
+	    }
+
+	    return true;
+    }
+    
+    public bool ProcessGuardStep(string[] currentState, out string[] updatedMap, out bool guardMoved, out Point guardPos, out char guardDir)
+    {
+	    guardMoved = false;
+	    GetMapInfo(currentState, out var obstacles, out var currentGuardPosition, out var currentGuardDirection);
+	    guardPos = new Point(currentGuardPosition.X, currentGuardPosition.Y);
+	    guardDir = currentGuardDirection;
+	    if (guardPos.X < 0 && guardPos.Y < 0)
+	    {
+		    updatedMap = [];
+		    Console.WriteLine($"Guard OOB!");
+		    return false;
+	    }
+
+	    Point? currentObstacle = null;
+	    foreach (var obs in obstacles)
+	    {
+		    if (currentObstacle != null)
+			    continue;
+		    switch (guardDir)
+		    {
+			    case 'N':
+				    if (obs.Y == guardPos.Y - 1 && obs.X == guardPos.X)
+				    {
+					    currentObstacle = obs;
+				    }
+				    break;
+			    case 'S':
+				    if (obs.Y == guardPos.Y + 1 && obs.X == guardPos.X)
+				    {
+					    currentObstacle = obs;
+				    }
+				    break;
+			    case 'E':
+				    if (obs.Y == guardPos.Y && obs.X == guardPos.X + 1)
+				    {
+					    currentObstacle = obs;
+				    }
+				    break;
+			    case 'W':
+				    if (obs.Y == guardPos.Y && obs.X == guardPos.X - 1)
+				    {
+					    currentObstacle = obs;
+				    }
+				    break;
+		    }
+	    }
+
+	    if (currentObstacle == null)
+	    {
+		    switch (guardDir)
+		    {
+			    case 'N':
+				    guardPos.Y--;
+				    break;
+			    case 'S':
+				    guardPos.Y++;
+				    break;
+			    case 'E':
+				    guardPos.X++;
+				    break;
+			    case 'W':
+				    guardPos.X--;
 				    break;
 		    }
 
@@ -162,18 +304,17 @@ public class DaySix : IDayHandler
 	    }
 	    else
 	    {
-		    if (RotationDictionary.TryGetValue(currentGuardDirection, out var sp))
+		    if (RotationDictionary.TryGetValue(guardDir, out var sp))
 		    {
-			    currentGuardDirection = sp;
+			    guardDir = sp;
 		    }
 	    }
 	    updatedMap = GenerateMap(
 		    currentState[0].Length, 
 		    currentState.Length,
 		    obstacles,
-		    currentGuardPosition,
-		    currentGuardDirection);
-	    guardPosition = currentGuardPosition;
+		    guardPos,
+		    guardDir);
 	    return true;
     }
     public static FrozenDictionary<char, char> RotationDictionary => new Dictionary<char, char>()
