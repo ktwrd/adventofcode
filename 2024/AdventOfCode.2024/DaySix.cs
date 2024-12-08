@@ -1,5 +1,6 @@
 using System.Collections.Frozen;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text.RegularExpressions;
 
@@ -16,51 +17,236 @@ public class DaySix : IDayHandler
 	    Console.WriteLine($"Part Two: {b}");
     }
 
-    public int PartTwo(string[] lines)
+    #region Part Two
+    public int PartTwo(IReadOnlyCollection<string> inputData)
     {
-	    int width = lines[0].Length;
-	    int height = lines.Length;
-	    var allPoints = new List<Point>();
-	    GetMapInfo(lines, out var ogObstacles, out var guardPosition, out var guardDir);
-	    for (int i = 0; i < height; i++)
+	    var possibilities = GetPartTwoPossibilities(inputData);
+	    
+	    int loopCount = 0;
+	    var data = MapData(inputData);
+	    foreach (var possibility in possibilities)
 	    {
-		    for (int c = 0; c < width; c++)
+		    data[possibility.X, possibility.Y] = '#';
+		    var guard = new GuardObject();
+		    guard.ParseFromMap(inputData);
+		    var x = CheckForLoop(data, guard);
+		    if (x)
 		    {
-			    var p = new Point(c, i);
-			    if (!ogObstacles.Contains(p))
-			    {
-				    allPoints.Add(new(c, i));
-			    }
+			    loopCount++;
+		    }
+		    data[possibility.X, possibility.Y] = '.';
+	    }
+		
+	    return loopCount;
+    }
+
+    private GuardDirection[,] InitDirections(char[,] inputData)
+    {
+	    int width = inputData.GetLength(0);
+	    int height = inputData.GetLength(1);
+	    var result = new GuardDirection[width, height];
+	    for (int x = 0; x < width; x++)
+	    {
+		    for (int y = 0; y < height; y++)
+		    {
+			    result[x, y] = GuardDirection.None;
 		    }
 	    }
-	    
-	    int result = 0;
-	    int count = 0;
-		void Force(Point point)
-		{
-			var obstacles = ogObstacles.ToList();
-			obstacles.Add(point);
 
-			var (cm, reachedLimit) = Process(obstacles, guardPosition, guardDir);
-			cm.Clear();
-			if (reachedLimit)
-			{
-				result++;
-			}
-
-			count++;
-			if (count % 100 == 0)
-			{
-				Console.WriteLine(count);
-			}
-		}
-		
-		Console.WriteLine($"Brute-forcing {allPoints.Count} spots.");
-	    Parallel.ForEach(allPoints, Force);
-	    
 	    return result;
     }
 
+    private bool CheckForLoop(
+	    char[,] inputData,
+	    GuardObject guard)
+    {
+	    var visited = InitDirections(inputData);
+	    var x = guard.Position.X;
+	    var y = guard.Position.Y;
+	    int width = inputData.GetLength(0);
+	    int height = inputData.GetLength(1);
+	    while (true)
+	    {
+		    var dir = visited[x, y];
+		    if (dir.HasFlag(guard.Direction))
+		    {
+			    return true;
+		    }
+
+		    visited[x, y] |= guard.Direction;
+
+		    var nextPosition = new Point(x + guard.MoveDelta.X, y + guard.MoveDelta.Y);
+		    if (nextPosition.X < 0 || nextPosition.X >= width)
+			    break;
+		    if (nextPosition.Y < 0 || nextPosition.Y >= height)
+			    break;
+		    var nextChar = inputData[nextPosition.X, nextPosition.Y];
+		    if (nextChar == '*')
+			    break;
+		    if (nextChar == '#')
+		    {
+			    guard.Turn();
+			    continue;
+		    }
+
+		    x = nextPosition.X;
+		    y = nextPosition.Y;
+	    }
+
+	    return false;
+    }
+
+    private char[,] MapData(IReadOnlyCollection<string> inputData)
+    {
+	    int height = inputData.Count;
+	    int width = inputData.First().Length;
+	    var result = new char[width, inputData.Count];
+	    for (int y = 0; y < height; y++)
+	    {
+		    var row = inputData.ElementAt(y);
+		    for (int x = 0; x < width; x++)
+		    {
+			    result[x, y] = row[x];
+		    }
+	    }
+
+	    return result;
+    }
+    private static Point GetDelta(GuardDirection direction)
+    {
+	    if (direction.HasFlag(GuardDirection.Up))
+	    {
+		    return new Point(0, -1);
+	    }
+	    else if (direction.HasFlag(GuardDirection.Down))
+	    {
+		    return new Point(0, 1);
+	    }
+	    else if (direction.HasFlag(GuardDirection.Left))
+	    {
+		    return new Point(-1, 0);
+	    }
+	    else if (direction.HasFlag(GuardDirection.Right))
+	    {
+		    return new Point(1, 0);
+	    }
+
+	    return Point.Empty;
+    }
+
+    public struct GuardObject
+    {
+	    public GuardObject()
+	    {
+		    Direction = GuardDirection.None;
+		    Position = Point.Empty;
+		    MoveDelta = Point.Empty;
+	    }
+
+	    public void ParseFromMap(IReadOnlyCollection<string> inputData)
+	    {
+		    int width = inputData.First().Length;
+		    int height = inputData.Count;
+		    for (int y = 0; y < height; y++)
+		    {
+			    var row = inputData.ElementAt(y);
+			    for (int x = 0; x < width; x++)
+			    {
+				    if (row[x] == '^')
+				    {
+					    Direction = GuardDirection.Up;
+					    Position = new Point(x, y);
+					    MoveDelta = GetDelta(Direction);
+				    }
+				    else if (row[x] == '>')
+				    {
+					    Direction = GuardDirection.Right;
+					    Position = new Point(x, y);
+					    MoveDelta = GetDelta(Direction);
+				    }
+				    else if (row[x] == 'v' || row[x] == 'V')
+				    {
+					    Direction = GuardDirection.Down;
+					    Position = new Point(x, y);
+					    MoveDelta = GetDelta(Direction);
+				    }
+				    else if (row[x] == '<')
+				    {
+					    Direction = GuardDirection.Left;
+					    Position = new Point(x, y);
+					    MoveDelta = GetDelta(Direction);
+				    }
+			    }
+		    }
+	    }
+	    public GuardDirection Direction;
+	    public Point Position;
+
+	    public Point MoveDelta;
+	    
+	    public void Turn()
+	    {
+		    if (Direction == GuardDirection.Up)
+		    {
+			    Direction = GuardDirection.Right;
+			    MoveDelta = GetDelta(Direction);
+		    }
+		    else if (Direction == GuardDirection.Down)
+		    {
+			    Direction = GuardDirection.Left;
+			    MoveDelta = GetDelta(Direction);
+		    }
+		    else if (Direction == GuardDirection.Left)
+		    {
+			    Direction = GuardDirection.Up;
+			    MoveDelta = GetDelta(Direction);
+		    }
+		    else if (Direction == GuardDirection.Right)
+		    {
+			    Direction = GuardDirection.Down;
+			    MoveDelta = GetDelta(Direction);
+		    }
+		    else
+		    {
+			    // Direction is invalid!
+			    Debugger.Break();
+		    }
+	    }
+    }
+
+	[Flags]
+    public enum GuardDirection
+    {
+	    None = 0x00,
+	    Up = 0x01,
+	    Down = 0x02,
+	    Left = 0x04,
+	    Right = 0x08,
+	    All = Up | Down | Left | Right
+    }
+
+    private List<Point> GetPartTwoPossibilities(IReadOnlyCollection<string> inputData)
+    {
+	    var result = new List<Point>();
+	    int height = inputData.Count;
+	    var width = inputData.First().Length;
+	    for (int y = 0; y < height; y++)
+	    {
+		    var row = inputData.ElementAt(y);
+		    for (int x = 0; x < width; x++)
+		    {
+			    if (row[x] == '.')
+			    {
+				    result.Add(new Point(x, y));
+			    }
+		    }
+	    }
+
+	    return result;
+    }
+    #endregion
+    
+    #region Part One
     public int PartOne(string[] lines)
     {
 	    var (count, l) = Process(lines);
@@ -75,7 +261,6 @@ public class DaySix : IDayHandler
 	    
 	    walkedPositions = walkedPositions.Distinct().ToList();
 	    var walkedMap = GenerateMap(lines[0].Length, lines.Length, obstacles, Point.Empty,  ' ', walkedPositions);
-	    Console.WriteLine($"========= Touched parts");
 	    int count = 0;
 	    foreach (var x in walkedMap)
 	    {
@@ -131,6 +316,7 @@ public class DaySix : IDayHandler
     {
 	    { '^', 'N' },
 	    { 'v', 'S' },
+	    { 'V', 'S'},
 	    { '<', 'W' },
 	    { '>', 'E' }
     }.ToFrozenDictionary();
@@ -300,4 +486,5 @@ public class DaySix : IDayHandler
 
 	    return result;
     }
+    #endregion
 }
