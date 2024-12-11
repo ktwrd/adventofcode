@@ -27,47 +27,92 @@ public class DayEleven : IDayHandler
 
     public long Blink(int count, long[] data)
     {
-        long result = 0;
-        for (int i = 0; i < count; i++)
-        {
-            data = BlinkItem(data);
-            Console.WriteLine($"{i}: {data.LongLength}");
-            result = data.LongLength;
-        }
+        var result = BlinkItemAlt(data, count);
 
         return result;
+    }
+
+    public long BlinkItemAlt(long[] inputData, int limit)
+    {
+        int current = 0;
+        var data = inputData;
+        while (current < limit)
+        {
+            long expectedLength = 0;
+            foreach (var v in data)
+            {
+                expectedLength++;
+                if (v != 0)
+                {
+                    var vs = v.ToString().Length;
+                    if (vs % 2 == 0)
+                    {
+                        expectedLength++;
+                    }
+                }
+            }
+
+            long index = 0;
+            var result = new long[expectedLength];
+            foreach (var v in data)
+            {
+                if (v == 0)
+                {
+                    result[index] = 1;
+                    index++;
+                }
+                else
+                {
+                    var vs = v.ToString().Length;
+                    if (vs % 2 == 0)
+                    {
+                        var vstr = v.ToString();
+                        var len = Math.Max(Convert.ToInt32(Math.Floor(vstr.Length / 2f)), 0);
+                        var left = vstr.Substring(0, len);
+                        var right = vstr.Substring(len).TrimStart('0');
+
+                        result[index] = long.Parse(left);
+                        index++;
+                        result[index] = string.IsNullOrEmpty(right) ? 0 : long.Parse(right);
+                    }
+                    else
+                    {
+                        result[index] = v * 2024;
+                    }
+                    index++;
+                }
+            }
+
+            data = result;
+            current++;
+            Console.WriteLine($"{current}: {data.LongLength}");
+        }
+
+        return data.LongLength;
     }
     public long[] BlinkItem(long[] input)
     {
         long expectedLength = 0;
         foreach (var v in input)
         {
-            if (v == 0)
+            if (v != 0)
             {
-                expectedLength++;
-            }
-            else
-            {
-                var vs = v.ToString();
-                if (vs.Length % 2 == 0)
-                {
-                    expectedLength += 2;
-                }
-                else
+                var vs = v.ToString().Length;
+                if (vs % 2 == 0)
                 {
                     expectedLength++;
                 }
             }
+            expectedLength++;
         }
 
         long index = 0;
-        long[] result = new long[expectedLength];
+        var result = new long[expectedLength];
         foreach (var v in input)
         {
             if (v == 0)
             {
                 result[index] = 0;
-                index++;
             }
             else
             {
@@ -75,21 +120,24 @@ public class DayEleven : IDayHandler
                 if (vs % 2 == 0)
                 {
                     var vstr = v.ToString();
-                    var len = Math.Max(Convert.ToInt32(Math.Floor(vstr.Length / 2f)), 0);
-                    var left = vstr.Substring(0, len);
-                    var right = vstr.Substring(len).TrimStart('0');
+                    var len = Convert.ToInt32(Math.Floor(vstr.Length / 2f));
+                    var left = vstr[..len];
 
                     result[index] = int.Parse(left);
+                    left = string.Empty;
                     index++;
+
+                    var right = vstr[len..].TrimStart('0');
                     result[index] = right.Length > 0 ? int.Parse(right) : 0;
-                    index++;
+                    right = string.Empty;
+                    vstr = string.Empty;
                 }
                 else
                 {
                     result[index] = v * 2024;
-                    index++;
                 }
             }
+            index++;
         }
 
         return result;
