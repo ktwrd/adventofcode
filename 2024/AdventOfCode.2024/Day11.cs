@@ -27,11 +27,77 @@ public class DayEleven : IDayHandler
 
     public long Blink(int count, long[] data)
     {
-        var result = BlinkItemAlt(data, count);
+        var result = BlinkItemAltAgain(data, count);
 
         return result;
     }
 
+    public long BlinkItemAltAgain(long[] inputData, int limit)
+    {
+        long total = 0;
+        for (int ixi = 0; ixi < inputData.Length; ixi++)
+        {
+            int current = 0;
+            var data = new long[] { inputData[ixi] };
+            while (current < limit)
+            {
+                long expectedLength = 0;
+                foreach (var v in data)
+                {
+                    expectedLength++;
+                    if (v != 0)
+                    {
+                        var vs = v.ToString().Length;
+                        if (vs % 2 == 0)
+                        {
+                            expectedLength++;
+                        }
+                    }
+                }
+
+                long index = 0;
+                var result = new long[expectedLength];
+                foreach (var v in data)
+                {
+                    if (v == 0)
+                    {
+                        result[index] = 1;
+                        index++;
+                    }
+                    else
+                    {
+                        var vs = v.ToString().Length;
+                        if (vs % 2 == 0)
+                        {
+                            var vstr = v.ToString();
+                            var len = Math.Max(Convert.ToInt32(Math.Floor(vstr.Length / 2f)), 0);
+                            var left = vstr.Substring(0, len);
+                            var right = vstr.Substring(len).TrimStart('0');
+
+                            result[index] = long.Parse(left);
+                            index++;
+                            result[index] = string.IsNullOrEmpty(right) ? 0 : long.Parse(right);
+                        }
+                        else
+                        {
+                            result[index] = v * 2024;
+                        }
+                        index++;
+                    }
+                }
+
+                data = result;
+                current++;
+                Console.WriteLine($"{ixi}: {current}/{limit} ({data.LongLength})");
+            }
+
+            total += data.LongLength;
+            data = [];
+            Console.WriteLine($"{ixi}/{inputData.Length}");
+        }
+
+        return total;
+    }
     public long BlinkItemAlt(long[] inputData, int limit)
     {
         int current = 0;
@@ -85,7 +151,6 @@ public class DayEleven : IDayHandler
 
             data = result;
             current++;
-            Console.WriteLine($"{current}: {data.LongLength}");
         }
 
         return data.LongLength;
