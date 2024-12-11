@@ -27,77 +27,56 @@ public class DayEleven : IDayHandler
 
     public long Blink(int count, long[] data)
     {
-        var result = BlinkItemAltAgain(data, count);
+        long result = 0;
+        foreach (var v in data)
+        {
+            result += CountChildren(v, count);
+        }
 
         return result;
     }
 
-    public long BlinkItemAltAgain(long[] inputData, int limit)
+    public long CountChildren(long value, long remaining)
     {
-        long total = 0;
-        for (int ixi = 0; ixi < inputData.Length; ixi++)
+        if (remaining == 0)
+            return 1;
+        
+        var storeKey = (value, remaining);
+        if (Store.TryGetValue(storeKey, out var storeResult))
+            return storeResult;
+
+        long result = 0;
+
+        if (value == 0)
         {
-            int current = 0;
-            var data = new long[] { inputData[ixi] };
-            while (current < limit)
+            result = CountChildren(1, remaining - 1);
+        }
+        else
+        {
+            var valueStr = value.ToString();
+            if (valueStr.Length % 2 == 0)
             {
-                long expectedLength = 0;
-                foreach (var v in data)
-                {
-                    expectedLength++;
-                    if (v != 0)
-                    {
-                        var vs = v.ToString().Length;
-                        if (vs % 2 == 0)
-                        {
-                            expectedLength++;
-                        }
-                    }
-                }
-
-                long index = 0;
-                var result = new long[expectedLength];
-                foreach (var v in data)
-                {
-                    if (v == 0)
-                    {
-                        result[index] = 1;
-                        index++;
-                    }
-                    else
-                    {
-                        var vs = v.ToString().Length;
-                        if (vs % 2 == 0)
-                        {
-                            var vstr = v.ToString();
-                            var len = Math.Max(Convert.ToInt32(Math.Floor(vstr.Length / 2f)), 0);
-                            var left = vstr.Substring(0, len);
-                            var right = vstr.Substring(len).TrimStart('0');
-
-                            result[index] = long.Parse(left);
-                            index++;
-                            result[index] = string.IsNullOrEmpty(right) ? 0 : long.Parse(right);
-                        }
-                        else
-                        {
-                            result[index] = v * 2024;
-                        }
-                        index++;
-                    }
-                }
-
-                data = result;
-                current++;
-                Console.WriteLine($"{ixi}: {current}/{limit} ({data.LongLength})");
+                var len = Math.Max(Convert.ToInt32(Math.Floor(valueStr.Length / 2f)), 0);
+                var leftString = valueStr.Substring(0, len);
+                var rightString = valueStr.Substring(len).TrimStart('0');
+                
+                var left = long.Parse(leftString);
+                var right = string.IsNullOrEmpty(rightString) ? 0 : long.Parse(rightString);
+                result = CountChildren(left, remaining - 1);
+                result += CountChildren(right, remaining - 1);
             }
-
-            total += data.LongLength;
-            data = [];
-            Console.WriteLine($"{ixi}/{inputData.Length}");
+            else
+            {
+                result = CountChildren(value * 2024, remaining - 1);
+            }
         }
 
-        return total;
+        Store[storeKey] = result;
+        return result;
     }
+
+    private Dictionary<(long value, long remaining), long> Store = [];
+    
     public long BlinkItemAlt(long[] inputData, int limit)
     {
         int current = 0;
