@@ -24,6 +24,13 @@ public class DayEleven : IDayHandler
         var result = Blink(25, data);
         return result;
     }
+    
+    public long PartTwo(string[] inputData)
+    {
+        var data = ParseInput(inputData);
+        var result = Blink(75, data);
+        return result;
+    }
 
     public long Blink(int count, long[] data)
     {
@@ -76,121 +83,4 @@ public class DayEleven : IDayHandler
     }
 
     private Dictionary<(long value, long remaining), long> Store = [];
-    
-    public long BlinkItemAlt(long[] inputData, int limit)
-    {
-        int current = 0;
-        var data = inputData;
-        while (current < limit)
-        {
-            long expectedLength = 0;
-            foreach (var v in data)
-            {
-                expectedLength++;
-                if (v != 0)
-                {
-                    var vs = v.ToString().Length;
-                    if (vs % 2 == 0)
-                    {
-                        expectedLength++;
-                    }
-                }
-            }
-
-            long index = 0;
-            var result = new long[expectedLength];
-            foreach (var v in data)
-            {
-                if (v == 0)
-                {
-                    result[index] = 1;
-                    index++;
-                }
-                else
-                {
-                    var vs = v.ToString().Length;
-                    if (vs % 2 == 0)
-                    {
-                        var vstr = v.ToString();
-                        var len = Math.Max(Convert.ToInt32(Math.Floor(vstr.Length / 2f)), 0);
-                        var left = vstr.Substring(0, len);
-                        var right = vstr.Substring(len).TrimStart('0');
-
-                        result[index] = long.Parse(left);
-                        index++;
-                        result[index] = string.IsNullOrEmpty(right) ? 0 : long.Parse(right);
-                    }
-                    else
-                    {
-                        result[index] = v * 2024;
-                    }
-                    index++;
-                }
-            }
-
-            data = result;
-            current++;
-        }
-
-        return data.LongLength;
-    }
-    public long[] BlinkItem(long[] input)
-    {
-        long expectedLength = 0;
-        foreach (var v in input)
-        {
-            if (v != 0)
-            {
-                var vs = v.ToString().Length;
-                if (vs % 2 == 0)
-                {
-                    expectedLength++;
-                }
-            }
-            expectedLength++;
-        }
-
-        long index = 0;
-        var result = new long[expectedLength];
-        foreach (var v in input)
-        {
-            if (v == 0)
-            {
-                result[index] = 0;
-            }
-            else
-            {
-                var vs = v.ToString().Length;
-                if (vs % 2 == 0)
-                {
-                    var vstr = v.ToString();
-                    var len = Convert.ToInt32(Math.Floor(vstr.Length / 2f));
-                    var left = vstr[..len];
-
-                    result[index] = int.Parse(left);
-                    left = string.Empty;
-                    index++;
-
-                    var right = vstr[len..].TrimStart('0');
-                    result[index] = right.Length > 0 ? int.Parse(right) : 0;
-                    right = string.Empty;
-                    vstr = string.Empty;
-                }
-                else
-                {
-                    result[index] = v * 2024;
-                }
-            }
-            index++;
-        }
-
-        return result;
-    }
-    
-    public long PartTwo(string[] inputData)
-    {
-        var data = ParseInput(inputData);
-        var result = Blink(75, data);
-        return result;
-    }
 }
