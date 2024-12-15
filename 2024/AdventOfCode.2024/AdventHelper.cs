@@ -20,6 +20,14 @@ public static class AdventHelper
         return true;
     }
 
+    public static double GetDistance(Point p1, Point p2)
+    {
+        return GetDistance(p1.X, p1.Y, p2.X, p2.Y);
+    }
+    public static double GetDistance(double x1, double y1, double x2, double y2)
+    {
+        return Math.Sqrt(Math.Pow((x2 - x1), 2) + Math.Pow((y2 - y1), 2));
+    }
     public static char[,] GenerateGrid(int width, int height, char value)
     {
         var result = new char[width, height];
