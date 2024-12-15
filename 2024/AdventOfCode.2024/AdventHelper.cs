@@ -20,6 +20,48 @@ public static class AdventHelper
         return true;
     }
 
+    public static char[,] GenerateGrid(int width, int height, char value)
+    {
+        var result = new char[width, height];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                result[x, y] = value;
+            }
+        }
+
+        return result;
+    }
+
+    public static long[,] GenerateGrid(int width, int height, long value)
+    {
+        var result = new long[width, height];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                result[x, y] = value;
+            }
+        }
+
+        return result;
+    }
+
+    public static int[,] GenerateGrid(int width, int height, int value)
+    {
+        var result = new int[width, height];
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                result[x, y] = value;
+            }
+        }
+
+        return result;
+    }
+
     public static char[,] ParseGrid(string[] inputData)
     {
         var width = inputData[0].Length;
@@ -53,5 +95,79 @@ public static class AdventHelper
         }
 
         return result;
+    }
+
+    public static void PrintGrid(char[,] grid)
+    {
+        var width = grid.GetLength(0);
+        var height = grid.GetLength(1);
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                Console.Write(grid[x, y]);
+            }
+            Console.Write(Environment.NewLine);
+        }
+    }
+
+    public static void PrintGrid(int[,] grid)
+    {
+        int max = 0;
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                var l = grid[x, y].ToString().Length;
+                if (l > max) max = l;
+            }
+        }
+
+        for (int y = 0; y < grid.GetLength(1); y++)
+        {
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                var p = grid[x, y];
+                if (p == 0)
+                {
+                    Console.Write(".".PadRight(max + 1, ' '));
+                }
+                else
+                {
+                    Console.Write(p.ToString().PadRight(max + 1, ' '));
+                }
+            }
+            Console.Write("\n");
+        }
+    }
+
+    public static void PrintGrid(long[,] grid)
+    {
+        int max = 0;
+        for (int x = 0; x < grid.GetLength(0); x++)
+        {
+            for (int y = 0; y < grid.GetLength(1); y++)
+            {
+                var l = grid[x, y].ToString().Length;
+                if (l > max) max = l;
+            }
+        }
+
+        for (int y = 0; y < grid.GetLength(1); y++)
+        {
+            for (int x = 0; x < grid.GetLength(0); x++)
+            {
+                var p = grid[x, y];
+                if (p == 0)
+                {
+                    Console.Write(".".PadRight(max + 1, ' '));
+                }
+                else
+                {
+                    Console.Write(p.ToString().PadRight(max + 1, ' '));
+                }
+            }
+            Console.Write("\n");
+        }
     }
 }

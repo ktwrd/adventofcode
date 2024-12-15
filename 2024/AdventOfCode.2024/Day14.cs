@@ -73,45 +73,13 @@ public class Day14 : IDayHandler
     public long[,] Solve(string[] lines, int width, int height, int iterations)
     {
         var robots = Parse(lines);
-        var grid = GenerateGrid(width, height);
+        var grid = AdventHelper.GenerateGrid(width, height, (long)0);
         foreach (var r in robots)
         {
             r.ApplyVelocity(width, height, iterations);
             r.EnsureIndex(grid);
         }
-        // PrintGrid(grid);
-
         return grid;
-    }
-
-    private void PrintGrid(long[,] grid)
-    {
-        int max = 0;
-        for (int x = 0; x < grid.GetLength(0); x++)
-        {
-            for (int y = 0; y < grid.GetLength(1); y++)
-            {
-                var l = grid[x, y].ToString().Length;
-                if (l > max) max = l;
-            }
-        }
-
-        for (int y = 0; y < grid.GetLength(1); y++)
-        {
-            for (int x = 0; x < grid.GetLength(0); x++)
-            {
-                var p = grid[x, y];
-                if (p == 0)
-                {
-                    Console.Write(".".PadRight(max + 1, ' '));
-                }
-                else
-                {
-                    Console.Write(p.ToString().PadRight(max + 1, ' '));
-                }
-            }
-            Console.Write("\n");
-        }
     }
 
     public List<Robot> Parse(string[] lines)
@@ -156,14 +124,6 @@ public class Day14 : IDayHandler
         return result;
     }
 
-    public long[,] GenerateGrid(int width, int height)
-    {
-        var grid = new long[width, height];
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                grid[x, y] = 0;
-        return grid;
-    }
     public long PartTwo(string[] lines)
     {
         Console.WriteLine($"[PartTwo] Calculating result (this may take a while)");
