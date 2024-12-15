@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 
 namespace AdventOfCode.TwentyTwentyFour;
@@ -22,37 +21,34 @@ public class Day15 : IDayHandler
         foreach (var move in movements)
         {
             var robotPosition = FindRobotPosition(warehouse);
-            if (robotPosition.X == -1 && robotPosition.Y == -1)
+            if (robotPosition is { X: -1, Y: -1 })
             {
                 throw new InvalidDataException($"Could not find robot in warehouse!");
             }
 
-            var (moveKind, freeSpace, offset) = CanRobotMove(robotPosition, move, warehouse);
-            if (moveKind == RobotMoveKind.MoveRobot)
+            var offset = DirectionOffset[move];
+            _movementChanges = [];
+            if (CanMoveInDirection(robotPosition, offset, warehouse))
             {
-                warehouse[robotPosition.X, robotPosition.Y] = WarehouseObject.Empty;
-                robotPosition.X += offset.X;
-                robotPosition.Y += offset.Y;
-                warehouse[robotPosition.X, robotPosition.Y] = WarehouseObject.Robot;
-            }
-            else if (moveKind == RobotMoveKind.MoveRobotAndBox && freeSpace != null)
-            {
-                warehouse[robotPosition.X, robotPosition.Y] = WarehouseObject.Empty;
-                robotPosition.X += offset.X;
-                robotPosition.Y += offset.Y;
-                warehouse[robotPosition.X, robotPosition.Y] = WarehouseObject.Robot;
-                warehouse[freeSpace.Value.X, freeSpace.Value.Y] = WarehouseObject.Box;
+                foreach (var (p, x) in _movementChanges)
+                {
+                    warehouse[p.X, p.Y] = x;
+                }
             }
         }
-        PrintGrid(warehouse);
-        double result = 0;
+        
+        return GetResult(warehouse);
+    }
 
-        for (int x = 0; x < warehouse.GetLength(0); x++)
+    private long GetResult(WarehouseObject[,] warehouse)
+    {
+        double result = 0;
+        for (var x = 0; x < warehouse.GetLength(0); x++)
         {
-            for (int y = 0; y < warehouse.GetLength(1); y++)
+            for (var y = 0; y < warehouse.GetLength(1); y++)
             {
                 var w = warehouse[x, y];
-                if (w == WarehouseObject.Box)
+                if (w is WarehouseObject.Box or WarehouseObject.BoxLeft)
                 {
                     result += (100 * y) + x;
                 }
@@ -62,85 +58,68 @@ public class Day15 : IDayHandler
     }
     public long PartTwo(string[] inputData)
     {
-        long result = 0;
-        return result;
-    }
-
-    public void PrintGrid(WarehouseObject[,] grid)
-    {
-        for (int y = 0; y < grid.GetLength(1); y++)
+        var (warehouse, movements) = Parse(inputData, partTwo: true);
+        foreach (var move in movements)
         {
-            for (int x = 0; x < grid.GetLength(0); x++)
+            var robotPosition = FindRobotPosition(warehouse);
+            if (robotPosition is { X: -1, Y: -1 })
             {
-                var g = grid[x, y];
-                var c = '.';
-                if (g == WarehouseObject.Box)
-                {
-                    c = 'O';
-                }
-                else if (g == WarehouseObject.Robot)
-                {
-                    c = '@';
-                }
-                else if (g == WarehouseObject.Wall)
-                {
-                    c = '#';
-                }
-                else
-                {
-                    c = '.';
-                }
-                Console.Write(c);
+                throw new InvalidDataException($"Could not find robot in warehouse!");
             }
-            Console.Write(Environment.NewLine);
-        }
-    }
 
-    public (RobotMoveKind kind, Point? freeSpace, Point offset) CanRobotMove(Point robotPosition, Direction direction, WarehouseObject[,] warehouse)
-    {
-        var width = warehouse.GetLength(0);
-        var height = warehouse.GetLength(1);
-        var offset = DirectionOffset[direction];
-        var newPosition = new Point(robotPosition.X + offset.X, robotPosition.Y + offset.Y);
-        if (newPosition.X >= width || newPosition.X < 0 || newPosition.Y >= height || newPosition.Y < 0)
-            return (RobotMoveKind.InvalidPosition, null, offset);
-        if (warehouse[newPosition.X, newPosition.Y] == WarehouseObject.Wall)
-            return (RobotMoveKind.Nothing, null, offset);
-        if (warehouse[newPosition.X, newPosition.Y] == WarehouseObject.Box)
-        {
-            var checkQueue = new Queue<Point>();
-            checkQueue.Enqueue(newPosition);
-            while (checkQueue.Count > 0)
+            var offset = DirectionOffset[move];
+            _movementChanges = [];
+            if (CanMoveInDirection(robotPosition, offset, warehouse))
             {
-                var pop = checkQueue.Dequeue();
-                if (pop.X < 0 || pop.X >= width || pop.Y < 0 || pop.Y >= height)
+                foreach (var (p, x) in _movementChanges)
                 {
-                    throw new InvalidOperationException($"Queue item {pop} is out of bounds");
-                }
-
-                if (warehouse[pop.X, pop.Y] == WarehouseObject.Box)
-                {
-                    checkQueue.Enqueue(new(pop.X + offset.X, pop.Y + offset.Y));
-                }
-                else if (warehouse[pop.X, pop.Y] == WarehouseObject.Wall)
-                {
-                    return (RobotMoveKind.Nothing, null, offset);
-                }
-                else
-                {
-                    return (RobotMoveKind.MoveRobotAndBox, new(pop.X, pop.Y), offset);
+                    warehouse[p.X, p.Y] = x;
                 }
             }
         }
-        return (RobotMoveKind.MoveRobot, newPosition, offset);
+        
+        return GetResult(warehouse);
     }
 
-    public enum RobotMoveKind
+    private Dictionary<Point, WarehouseObject> _movementChanges = [];
+    private bool CanMoveInDirection(Point position, Point offset, WarehouseObject[,] warehouse)
     {
-        InvalidPosition,
-        Nothing,
-        MoveRobot,
-        MoveRobotAndBox
+        var next = new Point(position.X + offset.X, position.Y + offset.Y);
+        if (next.X < 0 || next.X >= warehouse.GetLength(0) || next.Y < 0 || next.Y >= warehouse.GetLength(1))
+            return false;
+        var nextObject = warehouse[next.X, next.Y];
+
+        if (nextObject == WarehouseObject.Wall) return false;
+        
+        if (nextObject == WarehouseObject.Box
+            || (offset.Y == 0 && (nextObject == WarehouseObject.BoxLeft || nextObject == WarehouseObject.BoxRight)))
+        {
+            if (CanMoveInDirection(next, offset, warehouse) == false)
+                return false;
+        }
+        else if (nextObject == WarehouseObject.BoxLeft)
+        {
+            if (CanMoveInDirection(next, offset, warehouse) == false)
+                return false;
+            if (CanMoveInDirection(new Point(position.X + 1, position.Y + offset.Y), offset, warehouse) == false)
+                return false;
+        }
+        else if (nextObject == WarehouseObject.BoxRight)
+        {
+            if (CanMoveInDirection(next, offset, warehouse) == false)
+                return false;
+            if (CanMoveInDirection(new Point(position.X - 1, position.Y + offset.Y), offset, warehouse) == false)
+                return false;
+        }
+
+        _movementChanges[next] = warehouse[position.X, position.Y];
+        if (_movementChanges.ContainsKey(position) == false)
+        {
+            _movementChanges[position] = WarehouseObject.Empty;
+        }
+        
+
+        return true;
     }
 
 
@@ -158,7 +137,7 @@ public class Day15 : IDayHandler
         return new(-1, -1);
     }
 
-    public (WarehouseObject[,] warehouse, Direction[] robotMovements) Parse(IList<string> inputData)
+    public (WarehouseObject[,] warehouse, Direction[] robotMovements) Parse(IList<string> inputData, bool partTwo = false)
     {
         var warehouseWidth = inputData[0].Length;
         var warehouseHeight = inputData.ToList().IndexOf("");
@@ -173,17 +152,111 @@ public class Day15 : IDayHandler
             else
             {
                 var row = inputData[y].ToCharArray();
-                if (row.Length < warehouseWidth)
-                    continue;
-                for (int x = 0; x < warehouseWidth; x++)
+                for (int x = 0; x < row.Length; x++)
                 {
                     warehouse[x, y] = ParseWarehouseObject(row[x]);
                 }
             }
         }
 
+        if (partTwo)
+        {
+            var w = ParseWarehousePartTwo(warehouse);
+            warehouse = w;
+        }
+
         var robotMovements = ParseDirection(robotMovementString.Trim(' ').ToCharArray());
         return (warehouse, robotMovements);
+    }
+
+    public WarehouseObject[,] ParseWarehouseObjects(IList<string> inputData)
+    {
+        var warehouseWidth = inputData[0].Length;
+        var warehouseHeight = inputData.ToList().IndexOf("");
+        if (warehouseHeight == -1)
+            warehouseHeight = inputData.Count;
+        var warehouse = new WarehouseObject[warehouseWidth, warehouseHeight];
+        for (int y = 0; y < inputData.Count; y++)
+        {
+            if (y <= warehouseHeight)
+            {
+                var row = inputData[y].ToCharArray();
+                for (int x = 0; x < row.Length; x++)
+                {
+                    warehouse[x, y] = ParseWarehouseObject(row[x]);
+                }
+            }
+        }
+
+        return warehouse;
+    }
+
+    public WarehouseObject[,] ParseWarehousePartTwo(WarehouseObject[,] original)
+    {
+        var inputData = new List<string>();
+        for (int y = 0; y < original.GetLength(1); y++)
+        {
+            var row = new List<WarehouseObject>();
+            for (int x = 0; x < original.GetLength(0); x++)
+            {
+                switch (original[x, y])
+                {
+                    case WarehouseObject.Empty:
+                        row.Add(WarehouseObject.Empty);
+                        row.Add(WarehouseObject.Empty);
+                        break;
+                    case WarehouseObject.Wall:
+                        row.Add(WarehouseObject.Wall);
+                        row.Add(WarehouseObject.Wall);
+                        break;
+                    case WarehouseObject.Robot:
+                        row.Add(WarehouseObject.Robot);
+                        row.Add(WarehouseObject.Empty);
+                        break;
+                    case WarehouseObject.Box:
+                        row.Add(WarehouseObject.BoxLeft);
+                        row.Add(WarehouseObject.BoxRight);
+                        break;
+                }
+            }
+
+            var rowString = "";
+            for (int x = 0; x < row.Count; x++)
+            {
+                var c = row[x];
+                if (c == WarehouseObject.Empty)
+                {
+                    rowString += '.';
+                }
+                else if (c == WarehouseObject.Wall)
+                {
+                    rowString += '#';
+                }
+                else if (c == WarehouseObject.Robot)
+                {
+                    rowString += '@';
+                }
+                else if (c == WarehouseObject.BoxLeft)
+                {
+                    rowString += '[';
+                }
+                else if (c == WarehouseObject.BoxRight)
+                {
+                    rowString += ']';
+                }
+                else if (c == WarehouseObject.Box)
+                {
+                    rowString += 'O';
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Invalid warehouse object {c} at position {x}, {y}");
+                }
+            }
+            inputData.Add(rowString);
+        }
+
+        return ParseWarehouseObjects(inputData);
     }
 
     private WarehouseObject ParseWarehouseObject(char value)
@@ -194,6 +267,8 @@ public class Day15 : IDayHandler
             {'#', WarehouseObject.Wall},
             {'O', WarehouseObject.Box},
             {'@', WarehouseObject.Robot},
+            {'[', WarehouseObject.BoxLeft},
+            {']', WarehouseObject.BoxRight}
         };
         if (d.TryGetValue(value, out var x))
             return x;
@@ -205,7 +280,9 @@ public class Day15 : IDayHandler
         Empty,
         Wall,
         Box,
-        Robot
+        Robot,
+        BoxLeft,
+        BoxRight
     }
 
     public Direction[] ParseDirection(char[] data)
