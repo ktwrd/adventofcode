@@ -178,4 +178,12 @@ public static class AdventHelper
             Console.Write("\n");
         }
     }
+
+    public static long Pow(long x, long count)
+    {
+        long result = x;
+        for (long i = 0; i < count; i++)
+            result *= x;
+        return result;
+    }
 }
