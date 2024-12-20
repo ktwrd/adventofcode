@@ -186,4 +186,18 @@ public static class AdventHelper
             result *= x;
         return result;
     }
+
+    public static string Slice(this string imp, int start)
+    => imp.Substring(start);
+    public static string Slice(this string inp, int start, int end)
+    {
+        int realEnd = end - start;
+        if (end < -inp.Length)
+            realEnd = 0;
+        if (end + start >= inp.Length)
+            realEnd = inp.Length - start;
+        if (end < start)
+            return string.Empty;
+        return inp.Substring(start, realEnd);
+    }
 }

@@ -27,7 +27,7 @@
     <None Update="data\6.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="data\7.txt">
+    <None Update="data\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="data\8.txt">
