@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Net;
 using System.Text.RegularExpressions;
 
@@ -67,6 +68,9 @@ public class Day24 : IDayHandler
         public string Right;
         public PathOperation Operation;
         public string PipeTo;
+        public bool IsDirect => Left.IndexOf('x') == 0 || Right.IndexOf('x') == 0;
+
+        public bool ConsiderResult => PipeTo.IndexOf('z') == 0;
 
         public override string ToString()
         {
@@ -89,76 +93,155 @@ public class Day24 : IDayHandler
             Solve(i, a, b);
         }
         var s = "";
-        foreach (var k in b.Keys.Where(e => e.StartsWith("z")).OrderByDescending(e => e))
+        var bitKeys = b.Keys.Where(e => e.StartsWith("z")).OrderBy(e => e).ToList();
+        foreach (var k in bitKeys)
         {
             var ss = b[k] ? '1' : '0';
-            s += ss;
-            // Console.WriteLine($"{k}: {ss}");
+            s = ss + s;
         }
-        Console.WriteLine(s);
         return Convert.ToInt64(s, 2);
     }
 
     private string PartTwo(string[] inputData)
     {
-        _processedInstructions = [];
         var (a, b) = ParseInput(inputData);
-        var swapped = new List<string>();
-        foreach (var i in a)
+        var inputBitCount = b.Keys.Count / 2;
+        var lastOutputPipe = "z" + inputBitCount.ToString().PadLeft(2, '0');
+        var flags = new List<string>();
+        var directXorItems = a.Where(e => e.IsDirect).Where(e => e.Operation == PathOperation.XOR).ToList();
+        foreach (var item in directXorItems)
         {
-            var rx = new Regex("([a-z])([a-z0-9]{2})");
-            var leftMatch = rx.Match(i.Left);
-            if (leftMatch.Success)
+            if (item.Left == "x00" || item.Right == "x00")
             {
-                var pipeToMatch = rx.Match(i.PipeTo);
-                if (pipeToMatch.Groups.Count == leftMatch.Groups.Count)
+                if (item.PipeTo != "z00")
                 {
-                    if (pipeToMatch.Groups[2].Value != leftMatch.Groups[2].Value)
+                    flags.Add(item.PipeTo);
+                }
+
+                continue;
+            }
+            else if (item.PipeTo == "z00")
+            {
+                flags.Add(item.PipeTo);
+            }
+
+            if (item.ConsiderResult)
+            {
+                flags.Add(item.PipeTo);
+            }
+        }
+
+        var indirectXORItems = a.Where(e => e.IsDirect == false).Where(e => e.Operation == PathOperation.XOR).ToList();
+        foreach (var item in indirectXORItems)
+        {
+            if (!item.ConsiderResult)
+            {
+                flags.Add(item.PipeTo);
+            }
+        }
+
+        foreach (var item in a.Where(e => e.ConsiderResult))
+        {
+            if (item.PipeTo == lastOutputPipe)
+            {
+                if (item.Operation != PathOperation.OR)
+                {
+                    flags.Add(item.PipeTo);
+                }
+            }
+            else if (item.Operation != PathOperation.XOR)
+            {
+                flags.Add(item.PipeTo);
+            }
+        }
+
+        var nextCheckIndexes = new List<int>();
+        for (int i = 0; i < directXorItems.Count; i++)
+        {
+            var item = directXorItems[i];
+
+            if (flags.Contains(item.PipeTo))
+                continue;
+            if (item.PipeTo == "z00")
+                continue;
+
+            var matches = indirectXORItems.Where(e => e.Left == item.PipeTo || e.Right == item.PipeTo).ToList();
+            if (matches.Count == 0)
+            {
+                nextCheckIndexes.Add(i);
+                flags.Add(item.PipeTo);
+            }
+        }
+
+        foreach (var item in nextCheckIndexes.Select(e => directXorItems[e]))
+        {
+            var targetPipeTo = "z" + item.Left.Substring(1);
+            var matches = indirectXORItems.Where(e => e.PipeTo == targetPipeTo).ToList();
+            if (matches.Count != 1)
+            {
+                throw new ApplicationException($"Input might be incorrect :/");
+            }
+            var targetMatch = matches[0];
+            var matchesOR = a.Where(e => e.Operation == PathOperation.OR)
+                .Where(e => e.PipeTo == targetMatch.Left || e.PipeTo == targetMatch.Right).ToList();
+            if (matchesOR.Count != 1)
+            {
+                throw new ApplicationException($"Input might be incorrect :/ (failed to find OR operations that have an output of {targetMatch.Left} or {targetMatch.Right})");
+            }
+
+            var correct = "";
+            if (targetMatch.Left != matchesOR[0].PipeTo)
+            {
+                correct = targetMatch.Left;
+            }
+            else if (targetMatch.Right != matchesOR[0].PipeTo)
+            {
+                correct = targetMatch.Right;
+            }
+            if (!string.IsNullOrEmpty(correct))
+            {
+                flags.Add(correct);
+            }
+        }
+
+        if (flags.Count != 8)
+        {
+            Console.WriteLine($"Output might be invalid, only contains 8 items");
+        }
+
+        return string.Join(",", flags.OrderBy(e => e));
+    }
+
+    private List<string> _processedInstructions = [];
+
+    private void EnsureParents(PathItem current, List<PathItem> instructions, Dictionary<string, bool> states)
+    {
+        EnsureParent(current.Left, instructions, states, (i) => i != current);
+        EnsureParent(current.Right, instructions, states, (i) => i != current);
+    }
+
+    private void EnsureParent(string item, List<PathItem> instructions, Dictionary<string, bool> states, Func<PathItem, bool>? filter = null)
+    {
+        filter ??= (_) => true;
+        if (states.ContainsKey(item) == false)
+        {
+            foreach (var i in instructions)
+            {
+                if (i.PipeTo == item)
+                {
+                    if (filter(i))
                     {
-                        swapped.Add(i.PipeTo);
-                        i.PipeTo = pipeToMatch.Groups[1].Value + leftMatch.Groups[2].Value;
+                        Solve(i, instructions, states);
                     }
                 }
             }
         }
-        foreach (var i in a)
-        {
-            Solve(i, a, b);
-        }
-
-        var result = string.Join(",", swapped.OrderBy(e => e));
-        return result;
     }
-
-    private List<string> _processedInstructions = [];
     private void Solve(PathItem current, List<PathItem> instructions, Dictionary<string, bool> states)
     {
         if (_processedInstructions.Contains(current.ToString()))
             return;
-        if (states.ContainsKey(current.Left) == false)
-        {
-            foreach (var i in instructions)
-            {
-                if (i.PipeTo == current.Left && i != current)
-                {
-                    Solve(i, instructions, states);
-                    break;
-                }
-            }
-        }
-
-        if (states.ContainsKey(current.Right) == false)
-        {
-            foreach (var i in instructions)
-            {
-                if (i.PipeTo == current.Right && i != current)
-                {
-                    Solve(i, instructions, states);
-                    break;
-                }
-            }
-        }
-
+        EnsureParents(current, instructions, states);
         switch (current.Operation)
         {
             case PathOperation.AND:
