@@ -1,4 +1,4 @@
-namespace AdventOfCode.TwentyTwentyFive;
+namespace AdventOfCode;
 
 public interface IDayHandler
 {

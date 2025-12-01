@@ -18,4 +18,8 @@
     <PackageReference Include="NeoSmart.PrettySize" Version="3.1.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AdventOfCode.Shared\AdventOfCode.Shared.csproj" />
+  </ItemGroup>
+
 </Project>

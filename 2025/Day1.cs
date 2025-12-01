@@ -1,8 +1,6 @@
-﻿using System.ComponentModel;
+﻿namespace AdventOfCode.TwentyTwentyFive;
 
-namespace AdventOfCode.TwentyTwentyFive;
-
-[DefaultValue(1)]
+[Advent(2025, 1)]
 public class DayOne : IDayHandler
 {
     public void Run(string[] data)

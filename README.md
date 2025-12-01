@@ -10,3 +10,8 @@ Done with Node.JS v16. Input filenames can be found in the code, usually the day
 Done with C#. Input file location can be defined with the environment variable `INPUT_PATH`, or can be placed in the `data` directory with the filename formatted like `<day>.txt` where `<day>` is replaced with the calender day of the puzzle (e.g; `05.txt` or `5.txt` for day 5).
 
 If a solution hasn't been implemented, then it will say so (but only after the input data has loaded).
+
+### 2025
+Requires same folder structure as 2024, but you can no longer use the `INPUT_PATH` environment variable.
+
+Advent days are declared by putting `AdventAttribute` on a class that implements `IDayHandler`.
