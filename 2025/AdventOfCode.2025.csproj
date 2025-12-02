@@ -8,6 +8,10 @@
     <RootNamespace>AdventOfCode.TwentyTwentyFive</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <Optimize>True</Optimize>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Update="data\*.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
