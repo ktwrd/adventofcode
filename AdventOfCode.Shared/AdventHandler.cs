@@ -130,7 +130,7 @@ public class AdventHandler
         instance.Run(content);
 
         sw.Stop();
-        var ms = sw.ElapsedMilliseconds;
+        var ms = sw.ElapsedTicks / (decimal)TimeSpan.TicksPerMillisecond;
         var alloc = GC.GetTotalAllocatedBytes() - allocStart;
         Console.WriteLine($"[Perf] Allocated: {PrettySize.Bytes(alloc)}");
         Console.WriteLine($"[Perf] Took: {ms}ms");
