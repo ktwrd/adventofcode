@@ -21,6 +21,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System.Diagnostics.CodeAnalysis;
+
 namespace AdventOfCode;
 
 public class AdventHandlerBuilder
@@ -28,6 +30,15 @@ public class AdventHandlerBuilder
     private string _dataDirectory = "./data";
     private bool _allowReadlineForDay = true;
     private int? _year = null;
+    private List<Type> _types = [];
+
+    public AdventHandlerBuilder WithType(
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
+        Type type)
+    {
+        _types.Add(type);
+        return this;
+    }
 
     public AdventHandlerBuilder WithDataDirectory(DirectoryInfo directory)
     {
@@ -67,6 +78,7 @@ public class AdventHandlerBuilder
         }
         var dayIdent = FindDayIdentifier(args);
         var handler = new AdventHandler(new DirectoryInfo("./data"));
+        handler.RegisterTypes(_types);
         var type = handler.RegisteredTypes
             .FirstOrDefault(e => e.Attribute.Year == _year && e.Attribute.Day == dayIdent)
             ?? throw new InvalidOperationException($"Could not find registered type for year {_year} and day {dayIdent}");
@@ -90,52 +102,5 @@ public class AdventHandlerBuilder
             return result;
 
         throw new InvalidOperationException($"Could not parse value into integer: \"{inputValue}\"");
-    }
-    public static void RunHandler(int year, params string[] args)
-    {
-        if (!Directory.Exists("./data"))
-        {
-            Console.Error.WriteLine(string.Join("\n",
-                "Missing data directory! Please put the input data in a .txt file that has the name of the day.",
-                "E.g; Day 1 data: ./data/1.txt",
-                "     Day 2 data: ./data/2.txt",
-                "     etc..."));
-            Environment.Exit(1);
-            return;
-        }
-        int? dayIdent = null;
-        if (args.Length == 0)
-        {
-            Console.WriteLine($"Enter day (1-31):");
-            var value = Console.ReadLine();
-            if (int.TryParse(value, out var dayIdentX))
-            {
-                dayIdent = dayIdentX;
-            }
-            else
-            {
-                Console.WriteLine($"Could not parse \"{value}\" into an integer");
-            }
-        }
-        else
-        {
-            if (int.TryParse(args[0], out var dayIdentX))
-            {
-                dayIdent = dayIdentX;
-            }
-            else
-            {
-                Console.WriteLine($"Could not parse \"{args[0]}\" into an integer");
-            }
-        }
-        if (dayIdent == null)
-        {
-            Environment.Exit(1);
-        }
-
-        var handler = new AdventHandler(new DirectoryInfo("./data"));
-        var type = handler.RegisteredTypes.FirstOrDefault(e => e.Attribute.Year == year && e.Attribute.Day == dayIdent.Value)
-            ?? throw new InvalidOperationException($"Could not find registered type for year {year} and day {dayIdent}");
-        handler.Execute(ref type);
     }
 }

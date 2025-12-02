@@ -1,7 +1,7 @@
 ﻿namespace AdventOfCode.TwentyTwentyFive;
 
 [Advent(2025, 1)]
-public class DayOne : IDayHandler
+public class Day1 : IDayHandler
 {
     public void Run(string[] data)
     {

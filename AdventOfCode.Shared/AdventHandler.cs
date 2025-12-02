@@ -23,6 +23,7 @@
  */
 using NeoSmart.PrettySize;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace AdventOfCode;
@@ -32,18 +33,20 @@ public class AdventHandler
     public AdventHandler(DirectoryInfo dataDirectory)
     {
         DataDirectory = dataDirectory;
+        RegisteredTypes = [];
         var entryAsm = Assembly.GetEntryAssembly();
         if (entryAsm != null)
         {
-            RegisterTypes(entryAsm);
+            RegisterTypes(entryAsm.GetTypes());
         }
     }
 
     public DirectoryInfo DataDirectory { get; private set; }
-    public IReadOnlyList<AdventRegisteredType> RegisteredTypes { get; private set; } = [];
+    public IReadOnlyList<AdventRegisteredType> RegisteredTypes { get; private set; }
 
     public record AdventRegisteredType
     {
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         public required Type Type { get; init; }
         public required AdventAttribute Attribute { get; init; }
 
@@ -57,15 +60,8 @@ public class AdventHandler
         }
     }
 
-    public void RegisterTypes(params Assembly[] assemblies)
-    {
-        foreach (var asm in assemblies)
-        {
-            RegisterTypes(asm.GetTypes());
-        }
-    }
-
-    public void RegisterTypes(params IEnumerable<Type> types)
+    public void RegisterTypes(
+        params IEnumerable<Type> types)
     {
         var registeredTypes = new List<AdventRegisteredType>(RegisteredTypes);
         foreach (var type in types)
@@ -124,6 +120,10 @@ public class AdventHandler
         Console.WriteLine($"[Perf] Executing year={type.Attribute.Year},day={type.Attribute.Day}");
         var instance = type.CreateInstance();
         
+        GC.Collect(2, GCCollectionMode.Forced, true);
+        GC.WaitForPendingFinalizers();
+        GC.RefreshMemoryLimit();
+
         var allocStart = GC.GetTotalAllocatedBytes();
         var sw = Stopwatch.StartNew();
 
@@ -131,6 +131,10 @@ public class AdventHandler
 
         sw.Stop();
         var ms = sw.ElapsedTicks / (decimal)TimeSpan.TicksPerMillisecond;
+        GC.Collect(2, GCCollectionMode.Forced, true);
+        GC.WaitForPendingFinalizers();
+        GC.RefreshMemoryLimit();
+
         var alloc = GC.GetTotalAllocatedBytes() - allocStart;
         Console.WriteLine($"[Perf] Allocated: {PrettySize.Bytes(alloc)}");
         Console.WriteLine($"[Perf] Took: {ms}ms");

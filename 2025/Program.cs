@@ -22,6 +22,11 @@
  * SOFTWARE.
  */
 
+using AdventOfCode.TwentyTwentyFive;
+
 new AdventOfCode.AdventHandlerBuilder()
     .WithYear(2025)
+    .WithType(typeof(Day1))
+    .WithType(typeof(Day2))
+    .WithType(typeof(Day3))
     .Run(args);

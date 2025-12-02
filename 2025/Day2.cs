@@ -37,8 +37,6 @@ public class Day2 : IDayHandler
                     ptB += j;
                     // Console.WriteLine($"B: ({j}) {content[i][0]}-{content[i][1]}");
                 }
-
-
             }
         }
         Console.WriteLine($"Part A: {ptA}");
