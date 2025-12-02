@@ -1,0 +1,9 @@
+{
+    "recommendations": [
+        "ms-dotnettools.vscode-dotnet-pack",
+        "streetsidesoftware.code-spell-checker",
+        "WakaTime.vscode-wakatime",
+        "redhat.vscode-xml",
+        "bierner.github-markdown-preview"
+    ]
+}
