@@ -121,10 +121,12 @@ public class AdventHandler
     }
     public static void Execute(ref AdventRegisteredType type, string[] content)
     {
+        Console.WriteLine($"[Perf] Executing year={type.Attribute.Year},day={type.Attribute.Day}");
+        var instance = type.CreateInstance();
+        
         var allocStart = GC.GetTotalAllocatedBytes();
         var sw = Stopwatch.StartNew();
 
-        var instance = type.CreateInstance();
         instance.Run(content);
 
         sw.Stop();
