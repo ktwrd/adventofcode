@@ -136,7 +136,7 @@ public class AdventHandler
         GC.RefreshMemoryLimit();
 
         var alloc = GC.GetTotalAllocatedBytes() - allocStart;
-        Console.WriteLine($"[Perf] Allocated: {PrettySize.Bytes(alloc)}");
+        Console.WriteLine($"[Perf] Memory Allocated: {PrettySize.Bytes(alloc)}");
         Console.WriteLine($"[Perf] Took: {ms}ms");
     }
 }
