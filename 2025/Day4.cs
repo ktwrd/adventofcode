@@ -7,8 +7,8 @@ public class Day4 : IDayHandler
     {
         var contentCharArray = content.Select(e => e.ToCharArray()).ToArray();
         var partOne = PartOne(ref contentCharArray);
-        Console.WriteLine($"Part One: {partOne}");
         var partTwo = PartTwo(ref contentCharArray);
+        Console.WriteLine($"Part One: {partOne}");
         Console.WriteLine($"Part Two: {partTwo}");
     }
 
@@ -37,10 +37,10 @@ public class Day4 : IDayHandler
         var last = new QPoint(content[0].Length - 1, content.Length - 1);
         long removed = 0;
         var anyDeleted = true;
+        var a = new HashSet<QPoint>();
         while (anyDeleted)
         {
-            anyDeleted = false;
-            var toDelete = new HashSet<QPoint>(4);
+            a.Clear();
             for (int x = 0; x < content[0].Length; x++)
             {
                 for (int y = 0; y < content.Length; y++)
@@ -50,18 +50,14 @@ public class Day4 : IDayHandler
                         var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y, ref last);
                         if (posArrRollCount < 4)
                         {
-                            removed++;
-                            toDelete.Add(new(x, y));
-                            anyDeleted = true;
+                            a.Add(new(x,y));
                         }
                     }
                 }
             }
-            foreach (var p in toDelete)
-            {
-                content[p.y][p.x] = '.';
-            }
-            toDelete.Clear();
+            foreach (var p in a) content[p.y][p.x] = '.';
+            anyDeleted = a.Count > 0;
+            removed += a.Count;
         }
         return removed;
     }
