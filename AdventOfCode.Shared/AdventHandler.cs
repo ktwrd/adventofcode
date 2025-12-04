@@ -130,13 +130,12 @@ public class AdventHandler
         instance.Run(content);
 
         sw.Stop();
-        var ms = sw.ElapsedTicks / (decimal)TimeSpan.TicksPerMillisecond;
         GC.Collect(2, GCCollectionMode.Forced, true);
         GC.WaitForPendingFinalizers();
         GC.RefreshMemoryLimit();
 
         var alloc = GC.GetTotalAllocatedBytes() - allocStart;
         Console.WriteLine($"[Perf] Memory Allocated: {PrettySize.Bytes(alloc)}");
-        Console.WriteLine($"[Perf] Took: {ms}ms");
+        Console.WriteLine($"[Perf] Took: {sw.Elapsed.TotalMilliseconds}ms");
     }
 }

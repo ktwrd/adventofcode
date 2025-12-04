@@ -3,39 +3,14 @@
 [Advent(2025, 4)]
 public class Day4 : IDayHandler
 {
-    public void Run(string[] content)
+    public void Run(string[] contentR)
     {
-        var contentCharArray = new ReadOnlySpan<char[]>([..content.Select(e => e.ToCharArray())]);
-        var partOne = PartOne(ref contentCharArray);
-        var partTwo = PartTwo(ref contentCharArray);
-        Console.WriteLine($"Part One: {partOne}");
-        Console.WriteLine($"Part Two: {partTwo}");
-    }
-
-    private static int PartOne(
-        ref ReadOnlySpan<char[]> content)
-    {
-        int result = 0;
-        for (int x = 0; x < content[0].Length; x++)
-        {
-            for (int y = 0; y < content.Length; y++)
-            {
-                if (content[y][x] == at)
-                {
-                    var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y);
-                    result += posArrRollCount < 4 ? 1 : 0;
-                }
-            }
-        }
-        return result;
-    }
-
-    private static int PartTwo(
-        ref ReadOnlySpan<char[]> content)
-    {
-        int removed = 0;
+        var content = new ReadOnlySpan<char[]>([..contentR.Select(e => e.ToCharArray())]);
+        int partOne = 0;
+        int partTwo = 0;
         var anyDeleted = true;
         var a = new HashSet<QPoint>();
+        var doingPartOne = true;
         while (anyDeleted)
         {
             a.Clear();
@@ -48,17 +23,24 @@ public class Day4 : IDayHandler
                         var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y);
                         if (posArrRollCount < 4)
                         {
-                            a.Add(new(x,y));
+                            a.Add(new(x, y));
+                            if (doingPartOne)
+                            {
+                                partOne++;
+                            }
                         }
                     }
                 }
             }
             foreach (var p in a) content[p.y][p.x] = dot;
             anyDeleted = a.Count > 0;
-            removed += a.Count;
+            partTwo += a.Count;
+            doingPartOne = false;
         }
-        return removed;
+        Console.WriteLine($"Part One: {partOne}");
+        Console.WriteLine($"Part Two: {partTwo}");
     }
+
     private static byte GetAdjRollCount(
         ref ReadOnlySpan<char[]> content,
         ref int x, ref int y)
