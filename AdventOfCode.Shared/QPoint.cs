@@ -1,7 +1,8 @@
 namespace AdventOfCode;
 
-public struct QPoint(long xx, long yy)
+
+public struct QPoint(int xx, int yy)
 {
-    public long x = xx;
-    public long y = yy;
+    public int x = xx;
+    public int y = yy;
 }
