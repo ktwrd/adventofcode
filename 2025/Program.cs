@@ -29,4 +29,5 @@ new AdventOfCode.AdventHandlerBuilder()
     .WithType(typeof(Day1))
     .WithType(typeof(Day2))
     .WithType(typeof(Day3))
+    .WithType(typeof(Day4))
     .Run(args);
