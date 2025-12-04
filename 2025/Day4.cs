@@ -1,32 +1,28 @@
-﻿using System.Collections.Frozen;
-using System.Reflection.Metadata;
-
-namespace AdventOfCode.TwentyTwentyFive;
+﻿namespace AdventOfCode.TwentyTwentyFive;
 
 [Advent(2025, 4)]
 public class Day4 : IDayHandler
 {
     public void Run(string[] content)
     {
-        var contentCharArray = new ReadOnlySpan<char[]>(content.Select(e => e.ToCharArray()).ToArray());
+        var contentCharArray = new ReadOnlySpan<char[]>([..content.Select(e => e.ToCharArray())]);
         var partOne = PartOne(ref contentCharArray);
         var partTwo = PartTwo(ref contentCharArray);
         Console.WriteLine($"Part One: {partOne}");
         Console.WriteLine($"Part Two: {partTwo}");
     }
 
-    private static long PartOne(
+    private static int PartOne(
         ref ReadOnlySpan<char[]> content)
     {
-        var last = new QPoint(content[0].Length - 1, content.Length - 1);
-        long result = 0;
+        int result = 0;
         for (int x = 0; x < content[0].Length; x++)
         {
             for (int y = 0; y < content.Length; y++)
             {
-                if (content[y][x] == '@')
+                if (content[y][x] == at)
                 {
-                    var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y, ref last);
+                    var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y);
                     result += posArrRollCount < 4 ? 1 : 0;
                 }
             }
@@ -34,11 +30,10 @@ public class Day4 : IDayHandler
         return result;
     }
 
-    private static long PartTwo(
+    private static int PartTwo(
         ref ReadOnlySpan<char[]> content)
     {
-        var last = new QPoint(content[0].Length - 1, content.Length - 1);
-        long removed = 0;
+        int removed = 0;
         var anyDeleted = true;
         var a = new HashSet<QPoint>();
         while (anyDeleted)
@@ -48,9 +43,9 @@ public class Day4 : IDayHandler
             {
                 for (int y = 0; y < content.Length; y++)
                 {
-                    if (content[y][x] == '@')
+                    if (content[y][x] == at)
                     {
-                        var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y, ref last);
+                        var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y);
                         if (posArrRollCount < 4)
                         {
                             a.Add(new(x,y));
@@ -58,35 +53,34 @@ public class Day4 : IDayHandler
                     }
                 }
             }
-            foreach (var p in a) content[p.y][p.x] = '.';
+            foreach (var p in a) content[p.y][p.x] = dot;
             anyDeleted = a.Count > 0;
             removed += a.Count;
         }
         return removed;
     }
-
-    private static readonly QPoint[] offsets =
-    [
-        new(-1, -1), new(0, -1), new(1, -1),
-        new(-1, 0),              new(1, 0),
-        new(-1, 1),  new(0, 1),  new(1, 1)
-    ];
-
     private static byte GetAdjRollCount(
         ref ReadOnlySpan<char[]> content,
-        ref int x, ref int y,
-        ref QPoint last)
+        ref int x, ref int y)
     {
-        byte posArrRollCount = 0;
-        foreach (var pos in offsets)
+        byte count = 0;
+        for (int i = 0; i < 9; i++)
         {
-            var px = pos.x + x;
-            var py = pos.y + y;
-            if (px < 0 || px > last.x
-                || py < 0 || py > last.y) continue;
-            if (content[py][px] == '@')
-                posArrRollCount++;
+            if (i == 4) continue;
+            int im = i % 3;
+            var ry = i < 3 ? -1 : i < 6 ? 0 : 1;
+            var py = ry + y;
+            if (py < 0 || py >= content.Length) continue;
+
+            var rx = im == 0 ? -1 : im == 2 ? 1 : 0;
+            var px = rx + x;
+            if (px < 0 || px >= content[0].Length) continue;
+
+            if (content[py][px] == at) count++;
         }
-        return posArrRollCount;
+        return count;
     }
+
+    private const char at = '@';
+    private const char dot = '.';
 }
