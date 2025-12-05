@@ -5,25 +5,40 @@ public class Day4 : IDayHandler
 {
     public void Run(string[] contentR)
     {
-        var content = new ReadOnlySpan<char[]>([..contentR.Select(e => e.ToCharArray())]);
-        int partOne = 0;
-        int partTwo = 0;
+        var content = contentR.Select(e => e.ToCharArray()).ToArray();
+        short partOne = 0;
+        short partTwo = 0;
         var anyDeleted = true;
-        var a = new HashSet<QPoint>();
+        var toDot = new byte[content[0].Length,content.Length];
         var doingPartOne = true;
         while (anyDeleted)
         {
-            a.Clear();
+            short ac = 0;
             for (int x = 0; x < content[0].Length; x++)
             {
                 for (int y = 0; y < content.Length; y++)
                 {
                     if (content[y][x] == at)
                     {
-                        var posArrRollCount = GetAdjRollCount(ref content, ref x, ref y);
-                        if (posArrRollCount < 4)
+                        byte rollCount = 0;
+                        for (int i = 0; i < 9; i++)
                         {
-                            a.Add(new(x, y));
+                            if (i == 4) continue;
+                            int im = i % 3;
+                            var ry = i < 3 ? -1 : i < 6 ? 0 : 1;
+                            var py = ry + y;
+                            if (py < 0 || py >= content.Length) continue;
+
+                            var rx = im == 0 ? -1 : im == 2 ? 1 : 0;
+                            var px = rx + x;
+                            if (px < 0 || px >= content[0].Length) continue;
+
+                            if (content[py][px] == at) rollCount++;
+                        }
+                        if (rollCount < 4)
+                        {
+                            if (toDot[x,y] == 0) ac++;
+                            toDot[x,y] = 1;
                             if (doingPartOne)
                             {
                                 partOne++;
@@ -32,35 +47,20 @@ public class Day4 : IDayHandler
                     }
                 }
             }
-            foreach (var p in a) content[p.y][p.x] = dot;
-            anyDeleted = a.Count > 0;
-            partTwo += a.Count;
+            for (int x = 0; x < content[0].Length; x++)
+            {
+                for (int y = 0; y < content.Length; y++)
+                {
+                    if (toDot[x,y] != 0) content[y][x] = dot;
+                    toDot[x,y] = 0;
+                }
+            }
+            anyDeleted = ac > 0;
+            partTwo += ac;
             doingPartOne = false;
         }
         Console.WriteLine($"Part One: {partOne}");
         Console.WriteLine($"Part Two: {partTwo}");
-    }
-
-    private static byte GetAdjRollCount(
-        ref ReadOnlySpan<char[]> content,
-        ref int x, ref int y)
-    {
-        byte count = 0;
-        for (int i = 0; i < 9; i++)
-        {
-            if (i == 4) continue;
-            int im = i % 3;
-            var ry = i < 3 ? -1 : i < 6 ? 0 : 1;
-            var py = ry + y;
-            if (py < 0 || py >= content.Length) continue;
-
-            var rx = im == 0 ? -1 : im == 2 ? 1 : 0;
-            var px = rx + x;
-            if (px < 0 || px >= content[0].Length) continue;
-
-            if (content[py][px] == at) count++;
-        }
-        return count;
     }
 
     private const char at = '@';
