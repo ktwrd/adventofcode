@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace AdventOfCode;
 
@@ -30,7 +31,7 @@ public class AdventHandlerBuilder
     private string _dataDirectory = "./data";
     private bool _allowReadlineForDay = true;
     private int? _year = null;
-    private List<Type> _types = [];
+    private readonly List<Type> _types = [];
 
     public AdventHandlerBuilder WithType(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
@@ -38,6 +39,11 @@ public class AdventHandlerBuilder
     {
         _types.Add(type);
         return this;
+    }
+    public AdventHandlerBuilder WithType<T>()
+        where T : class, IDayHandler, new()
+    {
+        return WithType(typeof(T));
     }
 
     public AdventHandlerBuilder WithDataDirectory(DirectoryInfo directory)
