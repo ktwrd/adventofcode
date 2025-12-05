@@ -10,14 +10,8 @@ public class Day1 : IDayHandler
         int zeroHits = 0;
         for (int i = 0; i < data.Length; i++)
         {
-            if (string.IsNullOrEmpty(data[i].Trim())) continue;
-            data[i] = data[i].Trim();
-
             var shiftValue = int.Parse(data[i].Substring(1));
-            var previousValue = int.Parse(value.ToString());
-            
-            var direction = data[i].ToCharArray()[0];
-            var delta = direction == 'L' ? -1 : 1;
+            var delta = data[i][0] == 'L' ? -1 : 1;
 
             for (int q = 0; q < shiftValue; q++)
             {
@@ -28,13 +22,8 @@ public class Day1 : IDayHandler
                     value = 99;
                 if (value == 0) zeroHits++;
             }
-            if (value == 0)
-            {
-                zero++;
-            }
-            Console.WriteLine($"{data[i]}  {previousValue} -> {value}");
+            if (value == 0) zero++;
         }
-        Console.WriteLine($"Current Value: {Math.Abs(value)}");
         Console.WriteLine($"Part A: {zero}");
         Console.WriteLine($"Part B: {zeroHits}");
     }
