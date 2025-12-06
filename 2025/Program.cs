@@ -32,7 +32,8 @@ var builder = new AdventHandlerBuilder()
     .WithType(typeof(Day2))
     .WithType(typeof(Day3))
     .WithType(typeof(Day4))
-    .WithType(typeof(Day5));
+    .WithType(typeof(Day5))
+    .WithType(typeof(Day6));
 builder.Run(args);
 if (args.Length > 0 && args.Contains("bench"))
 {
