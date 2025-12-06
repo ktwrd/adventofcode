@@ -3,7 +3,7 @@
 [Advent(2025, 4)]
 public class Day4 : IDayHandler
 {
-    public void Run(string[] contentR)
+    public void Run(string[] contentR, out object partOneS, out object partTwoS)
     {
         var content = contentR.Select(e => e.ToCharArray()).ToArray();
         short partOne = 0;
@@ -66,8 +66,8 @@ public class Day4 : IDayHandler
             partTwo += ac;
             doingPartOne = false;
         }
-        Console.WriteLine($"Part One: {partOne}");
-        Console.WriteLine($"Part Two: {partTwo}");
+        partOneS = partOne;
+        partTwoS = partTwo;
     }
 
     private const char at = '@';

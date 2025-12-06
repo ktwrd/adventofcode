@@ -21,7 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Order;
+using BenchmarkDotNet.Reports;
+using BenchmarkDotNet.Running;
 using NeoSmart.PrettySize;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -87,7 +92,7 @@ public class AdventHandler
     /// Get the input data for the provided advent registered type.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when no files could be found.</exception>
-    public string[] GetData(ref AdventRegisteredType type)
+    public static string[] GetData(ref AdventRegisteredType type)
     {
         var filenames = new[]
         {
@@ -99,7 +104,7 @@ public class AdventHandler
         string? targetFilename = null;
         foreach (var filename in filenames)
         {
-            var location = Path.Join(DataDirectory.FullName, filename);
+            var location = Path.Join("./data/", filename);
             if (File.Exists(location))
             {
                 targetFilename = location;
@@ -107,7 +112,7 @@ public class AdventHandler
             }
         }
         if (targetFilename == null)
-            throw new InvalidOperationException($"Could not find data for identifier \"{type.DistinctIdentifier}\". Attempted the following locations in {DataDirectory.FullName}\n" + string.Join("\n", filenames));
+            throw new InvalidOperationException($"Could not find data for identifier \"{type.DistinctIdentifier}\". Attempted the following locations in ./data/\n" + string.Join("\n", filenames));
         return File.ReadAllLines(targetFilename);
     }
 
@@ -127,9 +132,10 @@ public class AdventHandler
         var allocStart = GC.GetTotalAllocatedBytes();
         var sw = Stopwatch.StartNew();
 
-        instance.Run(content);
+        instance.Run(content, out var p1, out var p2);
 
         sw.Stop();
+        Console.WriteLine($"[Advent] p1={p1}, p2={p2}");
         GC.Collect(2, GCCollectionMode.Forced, true);
         GC.WaitForPendingFinalizers();
         GC.RefreshMemoryLimit();
@@ -137,5 +143,15 @@ public class AdventHandler
         var alloc = GC.GetTotalAllocatedBytes() - allocStart;
         Console.WriteLine($"[Perf] Memory Allocated: {PrettySize.Bytes(alloc)}");
         Console.WriteLine($"[Perf] Took: {sw.Elapsed.TotalMilliseconds}ms");
+
+        //TODO find an easier way to do this. currently refuses to work when AdventBenchmarkRunner is in AdventOfCode.Shared
+        //Console.WriteLine("Should benchmark? (1 = yes)");
+        //var shouldBenchmark = Console.ReadLine() == "1";
+        //if (shouldBenchmark)
+        //{
+        //    BenchmarkSwitcher
+        //        .FromTypes([typeof(AdventBenchmarkRunner<>).MakeGenericType(type.Type)])
+        //        .Run();
+        //}
     }
 }

@@ -3,12 +3,10 @@ namespace AdventOfCode.TwentyTwentyFive;
 [Advent(2025, 3)]
 public class Day3 : IDayHandler
 {
-    public void Run(string[] content)
+    public void Run(string[] content, out object partOne, out object partTwo)
     {
-        var part1 = Calc(ref content, 2);
-        var part2 = Calc(ref content, 12);
-        Console.WriteLine($"Part One: {part1}");
-        Console.WriteLine($"Part Two: {part2}");
+        partOne = Calc(ref content, 2);
+        partTwo = Calc(ref content, 12);
     }
     private static long Calc(ref string[] content, int k)
     {

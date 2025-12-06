@@ -21,12 +21,38 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+using System.Reflection;
+using BenchmarkDotNet.Attributes;
+
 namespace AdventOfCode;
 
-/// <summary>
-/// When implementing this, please make sure that it's on a class and you have <see cref="AdventAttribute"/> on it.
-/// </summary>
-public interface IDayHandler
+/// <remarks>
+/// god. i hate that having this in the target assembly is the easiest way to
+/// use benchmarkdotnet without rewriting everything.
+/// </remarks>
+[MemoryDiagnoser(false)]
+public class AdventBenchmarkRunner<TAdvent>
+    where TAdvent : IDayHandler, new()
 {
-    public void Run(string[] content, out object partOne, out object partTwo);
+	private readonly TAdvent _puzzle = new();
+	private string[] _rawInput = [];
+
+	[GlobalSetup]
+	public void Setup()
+	{
+		var attribute = typeof(TAdvent).GetCustomAttribute<AdventAttribute>()!;
+        var t = new AdventHandler.AdventRegisteredType()
+        {
+            Type = typeof(TAdvent),
+            Attribute = attribute ?? throw new InvalidOperationException($"Could not find AdventAttribute on {typeof(TAdvent)}")
+        };
+		_rawInput = AdventHandler.GetData(ref t);
+	}
+
+	[Benchmark]
+	public (string, string) Solve()
+    {
+        _puzzle.Run(_rawInput!, out var p1, out var p2);
+        return (p1.ToString()??"", p2.ToString()??"");
+    }
 }

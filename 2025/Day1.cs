@@ -3,7 +3,7 @@
 [Advent(2025, 1)]
 public class Day1 : IDayHandler
 {
-    public void Run(string[] data)
+    public void Run(string[] data, out object partOne, out object partTwo)
     {
         int value = 50;
         int zero = 0;
@@ -24,7 +24,7 @@ public class Day1 : IDayHandler
             }
             if (value == 0) zero++;
         }
-        Console.WriteLine($"Part A: {zero}");
-        Console.WriteLine($"Part B: {zeroHits}");
+        partOne = zero;
+        partTwo = zeroHits;
     }
 }

@@ -3,7 +3,7 @@ namespace AdventOfCode.TwentyTwentyFive;
 [Advent(2025, 5)]
 public class Day5 : IDayHandler
 {
-    public void Run(string[] content)
+    public void Run(string[] content, out object partOneS, out object partTwoS)
     {
         var rangeCount = content.IndexOf("");
         var ranges = new long[rangeCount][];
@@ -45,7 +45,7 @@ public class Day5 : IDayHandler
             p2c = Math.Max(p2c, ranges[i][1]);
         }
 
-        Console.WriteLine($"Part One: {partOne}");
-        Console.WriteLine($"Part Two: {partTwo}");
+        partOneS = partOne;
+        partTwoS = partTwo;
     }
 }

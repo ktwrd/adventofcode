@@ -33,6 +33,8 @@ public class AdventHandlerBuilder
     private int? _year = null;
     private readonly List<Type> _types = [];
 
+    public IReadOnlyCollection<Type> Types => _types;
+
     public AdventHandlerBuilder WithType(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
         Type type)

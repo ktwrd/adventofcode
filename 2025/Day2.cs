@@ -5,7 +5,7 @@ namespace AdventOfCode.TwentyTwentyFive;
 [Advent(2025, 2)]
 public class Day2 : IDayHandler
 {
-    public void Run(string[] contentL)
+    public void Run(string[] contentL, out object partOneS, out object partTwoS)
     {
         var content = string.Join("", contentL)
             .Split(',')
@@ -19,8 +19,8 @@ public class Day2 : IDayHandler
                 };
             })
             .ToArray();
-        long ptA = 0;
-        long ptB = 0;
+        long partOne = 0;
+        long partTwo = 0;
         for (int i = 0; i < content.Length; i++)
         {
             for (long j = content[i][0]; j <= content[i][1]; j++)
@@ -29,17 +29,17 @@ public class Day2 : IDayHandler
                 var half = js.Length / 2;
                 if (js[half..] == js[..half])
                 {
-                    ptA += j;
+                    partOne += j;
                     // Console.WriteLine($"A: ({j}) {content[i][0]}-{content[i][1]}");
                 }
                 if ((js[1..] + js[..^1]).Contains(js))
                 {
-                    ptB += j;
+                    partTwo += j;
                     // Console.WriteLine($"B: ({j}) {content[i][0]}-{content[i][1]}");
                 }
             }
         }
-        Console.WriteLine($"Part A: {ptA}");
-        Console.WriteLine($"Part B: {ptB}");
+        partOneS = partOne;
+        partTwoS = partTwo;
     }
 }

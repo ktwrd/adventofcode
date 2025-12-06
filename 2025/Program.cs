@@ -22,13 +22,23 @@
  * SOFTWARE.
  */
 
+using AdventOfCode;
 using AdventOfCode.TwentyTwentyFive;
+using BenchmarkDotNet.Running;
 
-new AdventOfCode.AdventHandlerBuilder()
+var builder = new AdventHandlerBuilder()
     .WithYear(2025)
     .WithType(typeof(Day1))
     .WithType(typeof(Day2))
     .WithType(typeof(Day3))
     .WithType(typeof(Day4))
-    .WithType(typeof(Day5))
-    .Run(args);
+    .WithType(typeof(Day5));
+builder.Run(args);
+if (args.Length > 0 && args.Contains("bench"))
+{
+    BenchmarkSwitcher
+        .FromTypes(builder.Types
+            .Select(e => typeof(AdventBenchmarkRunner<>).MakeGenericType(e))
+            .ToArray())
+        .Run();
+}
