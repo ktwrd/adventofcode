@@ -96,7 +96,13 @@ public class AdventHandlerBuilder
     private int FindDayIdentifier(params string[] args)
     {
         string inputValue = "";
-        if (args.Length == 0 && _allowReadlineForDay)
+        var now = DateTime.Now;
+        if (args.Length == 0 && now.Month == 12)
+        {
+            Console.WriteLine($"It's December!!! Assuming today ({now.Day})");
+            inputValue = now.Day.ToString();
+        }
+        else if (args.Length == 0 && _allowReadlineForDay)
         {
             Console.WriteLine($"Enter day (1-31):");
             inputValue = Console.ReadLine() ?? "";
