@@ -48,7 +48,7 @@ public class DefaultDictionary<TKey, TValue>(Func<TKey, TValue> defaultSelector,
         set => IndexSetInternal(key, value);
     }
 
-    public DefaultDictionary(TValue defaultValue) : this(defaultSelector: _ => defaultValue)
+    public DefaultDictionary(TValue defaultValue, int? defaultCapacity = null) : this(defaultSelector: _ => defaultValue, defaultCapacity: defaultCapacity)
     {
     }
 
