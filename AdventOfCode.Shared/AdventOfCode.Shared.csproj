@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="NeoSmart.PrettySize" Version="3.1.1" />
   </ItemGroup>
 
