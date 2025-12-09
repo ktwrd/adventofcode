@@ -23,29 +23,30 @@
  */
 namespace AdventOfCode;
 
-public static class Extensions
+/// <summary>
+/// Quick Edge using <see cref="QDPoint"/>
+/// </summary>
+public readonly struct QDEdge(QDPoint a, QDPoint b)
 {
-    public static long StraightLineDistanceL(this QVector3 self, QVector3 other)
-    {
-        if (self == other) return 0;
-        var deltaX = (long)self.X - other.X;
-        var deltaY = (long)self.Y - other.Y;
-        var deltaZ = (long)self.Z - other.Z;
-        return (deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ);
-    }
-    public static int StraightLineDistance(this QVector3 self, QVector3 other)
-    {
-        if (self == other) return 0;
-        var deltaX = self.X - other.X;
-        var deltaY = self.Y - other.Y;
-        var deltaZ = self.Z - other.Z;
-        return (deltaX * deltaX) + (deltaY * deltaY) + (deltaZ * deltaZ);
-    }
+    public bool IsHorizontal { get; } = a.Y == b.Y;
+    public QDPoint Start { get; } = a.Y == b.Y ? (a.X < b.X ? a : b) : (a.Y < b.Y ? a : b);
+    public QDPoint End { get; } = a.Y == b.Y ? (a.X < b.X ? b : a) : (a.Y < b.Y ? b : a);
 
-    public static QDEdge[] GetEdges(this QPoint[] points)
-        => points.Select((e, i) => new QDEdge(e, points[(i + 1) % points.Length]))
-                 .ToArray();
+    public bool Intersects(QDEdge other)
+    {
+        if (IsHorizontal == other.IsHorizontal) return false;
 
-    public static bool PolygonIntersects(this IEnumerable<QEdge> polygon, QEdge edge) => polygon.Any(e => e.Intersects(edge));
-    public static bool PolygonIntersects(this IEnumerable<QDEdge> polygon, QDEdge edge) => polygon.Any(e => e.Intersects(edge));
+        var h = IsHorizontal ? this : other;
+        var v = IsHorizontal ? other : this;
+
+        return v.Start.X > h.Start.X && v.Start.X < h.End.X
+            && h.Start.Y > v.Start.Y && h.Start.Y < v.End.Y;
+    }
+    
+    private const string TypeIdent = nameof(QDEdge);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(TypeIdent.GetHashCode(), Start.GetHashCode(), End.GetHashCode());
+    }
+    public override string ToString() => $"<Start: {Start} | End: {End}>";
 }

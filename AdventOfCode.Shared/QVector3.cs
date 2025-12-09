@@ -37,88 +37,50 @@ public readonly struct QVector3(int x, int y, int z)
     public int Y { get; } = y;
     public int Z { get; } = z;
 
-    #region IEqualityOperators
-    public static bool operator ==(QVector3 left, QVector3 right)
-    {
-        return left.X == right.X
-            && left.Y == right.Y
-            && left.Z == right.Z;
-    }
-    public static bool operator !=(QVector3 left, QVector3 right)
-    {
-        return left.X != right.X
-            && left.Y != right.Y
-            && left.Z != right.Z;
-    }
-    #endregion
-
-    #region IAdditionOperators
-    public static QVector3 operator +(QVector3 left, QVector3 right)
-    {
-        return new QVector3(
-            left.X + right.X,
-            left.Y + right.Y,
-            left.Z + right.Z
-        );
-    }
-    #endregion
-
-    #region ISubtractionOperators
-    public static QVector3 operator -(QVector3 left, QVector3 right)
-    {
-        return new QVector3(
-            left.X - right.X,
-            left.Y - right.Y,
-            left.Z - right.Z
-        );
-    }
-    #endregion
-
-    #region IMultiplyOperators
-    public static QVector3 operator *(QVector3 left, QVector3 right)
-    {
-        return new QVector3(
-            left.X * right.X,
-            left.Y * right.Y,
-            left.Z * right.Z
-        );
-    }
-    #endregion
-
-    #region IEquatable
-    public bool Equals(QVector3 other)
-    {
-        return other.X == X
-            && other.Y == Y
-            && other.Z == Z;
-    }
-    #endregion
-
     public override string ToString()
     {
         return $"<{X},{Y},{Z}>";
     }
 
+    private const string TypeIdent = nameof(QVector3);
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(TypeIdent.GetHashCode(), X.GetHashCode(), Y.GetHashCode(), Z.GetHashCode());
+    }
+
+    private static bool ValueEquals(QVector3? left, QVector3? right)
+    {
+        return left?.X == right?.X
+            && left?.Y == right?.Y
+            && left?.Z == right?.Z;
+    }
+
+    #region Interface Implementations
+    public static bool operator ==(QVector3 left, QVector3 right) =>  ValueEquals(left, right);
+    public static bool operator !=(QVector3 left, QVector3 right) => !ValueEquals(left, right);
+    public static QVector3 operator +(QVector3 left, QVector3 right) => new(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+    public static QVector3 operator -(QVector3 left, QVector3 right) => new(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+    public static QVector3 operator *(QVector3 left, QVector3 right) => new(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
+    public bool Equals(QVector3 other) => ValueEquals(this, other);
+    #endregion
+
     public override bool Equals([NotNullWhen(true)] object? obj)
     {
-        if (obj is QVector3 other)
-        {
-            return other.X == X
-                && other.Y == Y
-                && other.Z == Z;
-        }
+        if (obj is QVector3 other) return ValueEquals(this, other);
         return false;
     }
 
-    public static QVector3 Parse(string s)
+    public static QVector3 Parse(string s) => Parse(s, ',');
+    public static QVector3 Parse(string s, char separator)
     {
-        var numbers = s.Split(',').Select(int.Parse).ToArray();
+        var numbers = s.Split(separator).Select(int.Parse).ToArray();
         return new QVector3(numbers[0], numbers[1], numbers[2]);
     }
     
-    public static bool TryParse(string? s, out QVector3 result)
+    public static bool TryParse(string? s, out QVector3 result) => TryParse(s, ',', out result);
+    public static bool TryParse(string? s, char separator, out QVector3 result)
     {
-        var numbers = s?.Split(',').Select(int.Parse).ToArray() ?? [];
+        var numbers = s?.Split(separator).Select(int.Parse).ToArray() ?? [];
         if (numbers.Length < 3)
         {
             result = new(0,0,0);
