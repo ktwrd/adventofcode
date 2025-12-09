@@ -37,7 +37,8 @@ var builder = new AdventHandlerBuilder()
     .WithType(typeof(Day5))
     .WithType(typeof(Day6))
     .WithType(typeof(Day7))
-    .WithType(typeof(Day8));
+    .WithType(typeof(Day8))
+    .WithType(typeof(Day9));
 
 
 if (args.Length == 0 && DateTime.Now.Month == 12 && DateTime.Now.Day < 26)
