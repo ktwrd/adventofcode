@@ -6,9 +6,8 @@ public class Day11 : IDayHandler
     public void Run(string[] content, out object partOne, out object partTwo)
     {
         var racks = content.Select(e => new ServerRack(e)).ToArray();
-        var p2r = racks.Concat([new("out: ")]).ToArray();
         partOne = SolvePartOne(ref racks);
-        partTwo = SolvePartTwo(ref p2r);
+        partTwo = SolvePartTwo(ref racks);
     }
 
     private int SolvePartOne(
@@ -36,12 +35,11 @@ public class Day11 : IDayHandler
         return total;
     }
 
-    private Dictionary<string, long> _p2Dict = [];
+    private readonly Dictionary<string, long> _p2Dict = [];
 
     private long SolvePartTwo(
         ref ServerRack[] racks)
     {
-        _p2Dict = [];
         return SolvePartTwo(ref racks, "svr");
     }
     private long SolvePartTwo(ref ServerRack[] racks,
