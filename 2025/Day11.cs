@@ -9,7 +9,6 @@ public class Day11 : IDayHandler
         var p2r = racks.Concat([new("out: ")]).ToArray();
         partOne = SolvePartOne(ref racks);
         partTwo = SolvePartTwo(ref p2r);
-        // partTwo = Solve(false, ref racks);
     }
 
     private int SolvePartOne(
