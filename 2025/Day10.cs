@@ -22,18 +22,7 @@ public class Day10 : IDayHandler
                 );
             }).ToArray();
         partOneValue = data.Sum(e => SolvePartOne(e.IndicatorLights, e.ButtonWiring));
-
-        object partTwoLock = new object();
-
-        var p2i = 1;
-        Parallel.ForEach(data, machine =>
-        {
-            partTwoValue += SolvePartTwo(machine);
-            #if DEBUG
-            Console.WriteLine($"part two progress: {p2i}/{data.Length}");
-            #endif
-            p2i++;
-        });
+        partTwoValue = data.Sum(SolvePartTwo);
 
         partOne = partOneValue;
         partTwo = partTwoValue;
