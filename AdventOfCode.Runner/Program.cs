@@ -174,6 +174,7 @@ public static class Program
                 var types = GetTypes(year.Value);
                 if (result.GetValue(CommandBenchYearParallel))
                 {
+                    types.Remove(typeof(TwentyTwentyFive.Day10)); // ignore 2025/10 since it's so fucking slow
                     AdventBenchmarkRunnerGeneric.SetupGlobal(types);
                     BenchmarkSwitcher.FromTypes([typeof(AdventBenchmarkRunnerGeneric)]).RunAllJoined();
                 }
