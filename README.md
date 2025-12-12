@@ -12,6 +12,14 @@ Done with C#. Input file location can be defined with the environment variable `
 If a solution hasn't been implemented, then it will say so (but only after the input data has loaded).
 
 ### 2025
-Requires same folder structure as 2024, but you can no longer use the `INPUT_PATH` environment variable.
+Requires similar folder structure as 2024, but you can no longer use the `INPUT_PATH` environment variable.
+
+To run a solution, use the `AdventOfCode.Runner` project and run with the following arguments `run <day> <year>`
+(like: `dotnet run -- run 3 2025`)
+
+Required Folder Structure in `AdventOfCode.Runner` project.
+```
+./data/2025/<day>.txt
+```
 
 Advent days are declared by putting `AdventAttribute` on a class that implements `IDayHandler`.

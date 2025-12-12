@@ -21,38 +21,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-using System.Reflection;
-using BenchmarkDotNet.Attributes;
+
+using AdventOfCode.TwentyTwentyFive;
 
 namespace AdventOfCode;
 
-/// <remarks>
-/// god. i hate that having this in the target assembly is the easiest way to
-/// use benchmarkdotnet without rewriting everything.
-/// </remarks>
-[MemoryDiagnoser(false)]
-public class AdventBenchmarkRunner<TAdvent>
-    where TAdvent : IDayHandler, new()
+public static class Extensions2025
 {
-	private readonly TAdvent _puzzle = new();
-	private string[] _rawInput = [];
-
-	[GlobalSetup]
-	public void Setup()
-	{
-		var attribute = typeof(TAdvent).GetCustomAttribute<AdventAttribute>()!;
-        var t = new AdventHandler.AdventRegisteredType()
-        {
-            Type = typeof(TAdvent),
-            Attribute = attribute ?? throw new InvalidOperationException($"Could not find AdventAttribute on {typeof(TAdvent)}")
-        };
-		_rawInput = AdventHandler.GetData(ref t);
-	}
-
-	[Benchmark]
-	public (string, string) Solve()
+    public static T Add2025Types<T>(this T types)
+        where T : ICollection<Type>
     {
-        _puzzle.Run(_rawInput!, out var p1, out var p2);
-        return (p1.ToString()??"", p2.ToString()??"");
+        types.Add(typeof(Day1));
+        types.Add(typeof(Day2));
+        types.Add(typeof(Day3));
+        types.Add(typeof(Day4));
+        types.Add(typeof(Day5));
+        types.Add(typeof(Day6));
+        types.Add(typeof(Day7));
+        types.Add(typeof(Day8));
+        types.Add(typeof(Day9));
+        types.Add(typeof(Day10));
+        types.Add(typeof(Day11));
+        types.Add(typeof(Day12));
+        return types;
     }
 }

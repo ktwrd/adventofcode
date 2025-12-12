@@ -100,11 +100,13 @@ public class AdventHandler
             $"{type.Attribute.Day.ToString().PadLeft(2, '0')}.txt",
             $"{type.Attribute.Year}-{type.Attribute.Day}.txt",
             $"{type.Attribute.Year}-{type.Attribute.Day.ToString().PadLeft(2, '0')}.txt",
-        };
+            $"{type.Attribute.Year}/{type.Attribute.Day}.txt",
+            $"{type.Attribute.Year}/{type.Attribute.Day.ToString().PadLeft(2, '0')}.txt",
+        }.Select(e => "./data/" + e).ToArray();
         string? targetFilename = null;
         foreach (var filename in filenames)
         {
-            var location = Path.Join("./data/", filename);
+            var location = Path.GetFullPath(filename);
             if (File.Exists(location))
             {
                 targetFilename = location;
@@ -112,7 +114,7 @@ public class AdventHandler
             }
         }
         if (targetFilename == null)
-            throw new InvalidOperationException($"Could not find data for identifier \"{type.DistinctIdentifier}\". Attempted the following locations in ./data/\n" + string.Join("\n", filenames));
+            throw new InvalidOperationException($"Could not find data for identifier \"{type.DistinctIdentifier}\". Attempted the following locations:\n" + string.Join("\n", filenames));
         return File.ReadAllLines(targetFilename);
     }
 
@@ -120,6 +122,7 @@ public class AdventHandler
     {
         Execute(ref type, GetData(ref type));
     }
+
     public static void Execute(ref AdventRegisteredType type, string[] content)
     {
         Console.WriteLine($"[Perf] Executing year={type.Attribute.Year},day={type.Attribute.Day}");
