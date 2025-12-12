@@ -50,7 +50,7 @@ public class Day12 : IDayHandler
                 // (assuming 2 chars per number, and all 6 shapes
                 // with 7 for the value)
                 //      mean: 174.5us ->  154us
-                // allocated: 507kb   ->  447.59kb
+                // allocated: 507kb   ->  477.59kb
                 // max value: a=9801, s=4158
                 var w = ushort.Parse(line[..2]);
                 var h = ushort.Parse(line[3..5]);
