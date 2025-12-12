@@ -135,7 +135,8 @@ public class AdventHandler
         instance.Run(content, out var p1, out var p2);
 
         sw.Stop();
-        Console.WriteLine($"[Advent] p1={p1}, p2={p2}");
+        Console.WriteLine($"[Solution - Pt. 1] {p1}");
+        Console.WriteLine($"[Solution - Pt. 2] {p2}");
         GC.Collect(2, GCCollectionMode.Forced, true);
         GC.WaitForPendingFinalizers();
         GC.RefreshMemoryLimit();
