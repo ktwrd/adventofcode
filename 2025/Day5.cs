@@ -11,9 +11,6 @@ public class Day5 : IDayHandler
         long partTwo = 0;
         long p2c = -1;
 
-        //var cl = new long[content.Length - rangeCount];
-        //Console.WriteLine("cl = " + cl.Length);
-        //var q = 0;
         for (int i = 0; i < content.Length; i++)
         {
             if (i < rangeCount)
@@ -21,20 +18,12 @@ public class Day5 : IDayHandler
                 var spl = content[i].Split('-');
                 ranges[i % rangeCount] = (long.Parse(spl[0]), long.Parse(spl[1]));
             }
-            //else if (i > rangeCount)
-            //{
-            //    //Console.WriteLine(q);
-            //    cl[q] = long.Parse(content[i]);
-            //    q++;
-            //}
         }
         ranges = ranges.OrderBy(e => e.Item1).ToArray();
 
-        // part 1
         for (int i = rangeCount + 1; i < content.Length; i++)
         {
             var v = long.Parse(content[i]);
-            // var v = cl[i];
             for (int x = 0; x < rangeCount; x++)
             {
                 if (v >= ranges[x].Item1 && v <= ranges[x].Item2)
