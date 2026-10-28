@@ -5,12 +5,17 @@ public class Day4 : IDayHandler
 {
     public void Run(string[] contentR, out object partOneS, out object partTwoS)
     {
-        var content = contentR.Select(e => e.ToCharArray()).ToArray();
+        var width = contentR[0].Length;
+        var height = contentR.Length;
+        var memory = new bool[contentR[0].Length, contentR.Length];
+        for (int y = 0; y < contentR.Length; y++)
+        {
+            for (int x = 0; x < contentR[0].Length; x++)
+                memory[x, y] = contentR[y][x] == at;
+        }
         short partOne = 0;
         short partTwo = 0;
         var anyDeleted = true;
-        var width = content[0].Length;
-        var height = content.Length;
         var toDot = new byte[(width/8) + 1,height];
         var doingPartOne = true;
         while (anyDeleted)
@@ -22,7 +27,8 @@ public class Day4 : IDayHandler
                 {
                     var xa = x / 8;
                     var xb = (byte)(1 << (x%8));
-                    if (content[y][x] == at)
+                    // if (content[y][x] == at)
+                    if (memory[x, y])
                     {
                         byte rollCount = 0;
                         for (int i = 0; i < 9; i++)
@@ -37,7 +43,7 @@ public class Day4 : IDayHandler
                             var px = rx + x;
                             if (px < 0 || px >= width) continue;
 
-                            if (content[py][px] == at) rollCount++;
+                            if (memory[px, py]) rollCount++;
                         }
                         if (rollCount < 4)
                         {
@@ -57,7 +63,7 @@ public class Day4 : IDayHandler
                     var xa = x / 8;
                     var xb = (byte)(1 << (x%8));
                     if ((toDot[xa,y] & xb) != xb) continue;
-                    content[y][x] = dot;
+                    memory[x, y] = false;
                     toDot[xa,y] = 0;
                     ac++;
                 }
