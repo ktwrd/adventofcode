@@ -7,23 +7,15 @@ public class Day2 : IDayHandler
 {
     public void Run(string[] contentL, out object partOneS, out object partTwoS)
     {
-        var content = string.Join("", contentL)
-            .Split(',')
-            .Select(e =>
-            {
-                var s = e.Split('-');
-                return new[]
-                {
-                    long.Parse(s[0]),
-                    long.Parse(s[1])
-                };
-            })
-            .ToArray();
+        var content = contentL[0].Trim().Split(',');
         long partOne = 0;
         long partTwo = 0;
         for (int i = 0; i < content.Length; i++)
         {
-            for (long j = content[i][0]; j <= content[i][1]; j++)
+            var o = content[i].IndexOf('-');
+            var s = long.Parse(content[i].Substring(0, o));
+            var e = long.Parse(content[i].Substring(o + 1));
+            for (long j = s; j <= e; j++)
             {
                 var js = j.ToString();
                 var half = js.Length / 2;
