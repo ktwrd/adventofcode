@@ -152,11 +152,11 @@ public static class Program
         command.SetAction(result =>
         {
             var now = DateTime.Now;
-            var yearValue = result.GetValue(CommandRunYear);
+            var yearValue = result.GetValue(CommandBenchYear);
             Result<int, string> year = yearValue > 0
-                ? yearValue < 2024
-                    ? Result.Failure<int, string>("Year must be >= 2024")
-                    : Result.Success<int, string>(yearValue)
+                ? yearValue >= 2024
+                    ? Result.Success<int, string>(yearValue)
+                    : Result.Failure<int, string>("Year must be >= 2024")
                 : now.Month == 12 && now.Day < 26
                     ? Result.Success<int, string>(now.Year)
                     : "Cannot assume year since it's not December (or it's after December 25th)";
