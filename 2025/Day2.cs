@@ -1,5 +1,3 @@
-using System.Text.RegularExpressions;
-
 namespace AdventOfCode.TwentyTwentyFive;
 
 [Advent(2025, 2)]
@@ -13,8 +11,8 @@ public class Day2 : IDayHandler
         for (int i = 0; i < content.Length; i++)
         {
             var o = content[i].IndexOf('-');
-            var s = long.Parse(content[i].Substring(0, o));
-            var e = long.Parse(content[i].Substring(o + 1));
+            var s = long.Parse(content[i][..o]);
+            var e = long.Parse(content[i][(o + 1)..]);
             for (long j = s; j <= e; j++)
             {
                 var js = j.ToString();
@@ -22,12 +20,10 @@ public class Day2 : IDayHandler
                 if (js[half..] == js[..half])
                 {
                     partOne += j;
-                    // Console.WriteLine($"A: ({j}) {content[i][0]}-{content[i][1]}");
                 }
-                if ((js[1..] + js[..^1]).Contains(js))
+                if ((js[1..] + js[..^1]).Contains(js, StringComparison.Ordinal))
                 {
                     partTwo += j;
-                    // Console.WriteLine($"B: ({j}) {content[i][0]}-{content[i][1]}");
                 }
             }
         }
