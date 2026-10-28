@@ -1,88 +1,83 @@
-using System.Diagnostics;
+using System.Text;
 
 namespace AdventOfCode.TwentyTwentyFive;
 
 [Advent(2025, 6)]
 public class Day6 : IDayHandler
 {
+    const char cSpace = ' ';
     public void Run(string[] content, out object partOne, out object partTwo)
     {
-        var operations = content[content.Length - 1].Split(' ')
-            .Select(e => e.Trim())
-            .Where(e => !string.IsNullOrEmpty(e))
+        var operations = content[^1].Split(cSpace)
+            .Where(e => !string.IsNullOrWhiteSpace(e))
             .Select(e => e.ToCharArray()[0])
             .ToArray();
-        var rows = content.Take(content.Length - 1)
-            .Select(x => x.Split(' ')
-            .Select(e => e.Trim())
-            .Where(e => !string.IsNullOrEmpty(e))
-            .Select(long.Parse)
-            .ToArray())
+        var rows = content
+            .Take(content.Length - 1)
+            .Select(x => x.Split(cSpace)
+                .Where(e => e.Trim().Length > 0)
+                .Select(long.Parse)
+                .ToArray())
             .ToArray();
         var width = operations.Length;
         var height = rows.Length;
-        partOne = Calculate(operations, rows);
+        partOne = Calculate(ref operations, ref rows);
 
         var verticalValues = new long[content[0].Length];
 
+        var s = new StringBuilder(16);
         for (int x = 0; x < content[0].Length; x++)
         {
-            var valueBuilder = "";
             for (int y = 0; y < rows.Length; y++)
             {
-                if (content[y][x] != ' ') valueBuilder += content[y][x].ToString();
+                if (content[y][x] != cSpace) s.Append(content[y][x]);
             }
-            if (valueBuilder == "")
+            if (s.Length < 1)
             {
                 verticalValues[x] = -1;            
             }
             else
             {
-                verticalValues[x] = long.Parse(string.Join("", valueBuilder));
+                verticalValues[x] = long.Parse(s.ToString());
+                s.Clear();
             }
         }
 
-        int xx = 0;
-        int yy = 0;
+        long xx = 0;
+        long yy = 0;
         var n1 = 0;
         var grid = new long[rows[0].Length, rows.Length];
         var stack = new List<long>(10);
-        foreach (var v in verticalValues)
+        for (int i = verticalValues.Length - 1; i >= -1 ; i--)
         {
-            if (v == -1)
+            if (i == -1 || (i >= 0 && verticalValues[i] == -1))
             {
-                ShiftStack();
+                if (stack.Count < 1) continue;
+                for (int p = stack.Count - 1; p >= 0 ; p--)
+                {
+                    grid[xx, yy] = stack[p];
+                    yy++;
+                }
+                stack.Clear();
+
+                n1++;
+                yy = 0;
+                xx++;
             }
             else
             {
-                stack.Add(v);
+                stack.Add(verticalValues[i]);
             }
         }
-        ShiftStack();
-        void ShiftStack()
-        {
-            if (stack.Count < 1) return;
-            for (int p = stack.Count - 1; p >= 0 ; p--)
-            {
-                grid[xx, yy] = stack[p];
-                yy++;
-            }
-            stack.Clear();
 
-            n1++;
-            yy = 0;
-            xx++;
-        }
-
-        partTwo = Calculate(operations, grid, rows[0].Length, rows.Length);
+        partTwo = Calculate(ref operations, ref grid, rows[0].Length, rows.Length);
     }
 
-    private long Calculate(char[] operations, long[][] rows)
+    private static long Calculate(ref char[] operations, ref long[][] rows)
     {
         var result = new long[operations.Length];
         for (int x = 0; x < operations.Length; x++)
         {
-            var ope = operations[x];
             for (int y = 0; y < rows.Length; y++)
             {
                 if (y == 0)
@@ -91,7 +86,7 @@ public class Day6 : IDayHandler
                 }
                 else
                 {
-                    switch (ope)
+                    switch (operations[x])
                     {
                         case '*':
                             result[x] *= rows[y][x];
@@ -105,33 +100,34 @@ public class Day6 : IDayHandler
         }
         return result.Sum();
     }
-    private long Calculate(char[] operations, long[,] grid, int w, int h)
+    private static long Calculate(ref char[] operations, ref long[,] grid, int w, int h)
     {
-        var result = new long[w];
+        long r = 0;
         for (int x = 0; x < w; x++)
         {
-            var ope = operations[x];
+            long p = 0;
             for (int y = 0; y < h; y++)
             {
                 if (grid[x,y] == 0) continue;
                 if (y == 0)
                 {
-                    result[x] = grid[x,y];
+                    p = grid[x,y];
                 }
                 else
                 {
-                    switch (ope)
+                    switch (operations[x])
                     {
                         case '*':
-                            result[x] *= grid[x,y];
+                            p *= grid[x,y];
                             break;
                         case '+':
-                            result[x] += grid[x,y];
+                            p += grid[x,y];
                             break;
                     }
                 }
             }
+            r += p;
         }
-        return result.Sum();
+        return r;
     }
 }
